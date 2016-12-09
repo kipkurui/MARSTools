@@ -1,0 +1,389 @@
+  bioinfo 
+  2005 
+  2005 
+  subfigure 
+  clrscode 
+
+document  
+  1 
+
+ [Fuzzy integral similarity for TFBSs] FISim: A new similarity measure between TFBSs based on the  fuzzy integral 
+ [F.Garcia et al.] Fernando Garcia ^   a   to whom correspondence should be addressed , F. Javier Lopez ^   a , Carlos Cano^   a , Armando Blanco ^   a  
+  ^   a Department of Computer Science and Artificial Intelligence, University of Granada, Granada 18071, Spain 
+
+ 
+
+abstract  
+
+  Motivation: 
+TFBSs are known as regulatory motifs and can be represented as position frequency matrices (PFMs).
+The   de novo  identification of TFBSs is a crucial problem in computational biology and includes the issue of comparing putative TFBSs to one another and to already known TFBSs. Existing comparison methods only take into account the similarities between nucleotides distribution, missing the relative importance of each nucleotide within a given position. We propose a new similarity measure between PFMs, called FISim (Fuzzy Integral Similarity), based on the fuzzy integral of the distance of the nucleotides with respect to the level of conservation of the positions. We use FISim to identify motifs that describe binding sites for the same TF. Finally, we cluster real data from Jaspar applying a new cluster methodology based on kernel theory, called kcmeans, together with FISim to obtain groups of related motifs.
+
+  Results: 
+We show that our method is able to discriminate the importance of the non-conserved positions and well-conserved positions. FISim provides excellent results when dealing with sets of randomly generated motifs, and outperforms the rest of the methods when facing real datasets of related motifs. The proposed clustering yields groups of motifs potentially bound by the same TFs, providing more robust results than existing approaches.
+
+  Availability: 
+An implementation of the methods in Python can be found at http://genome.ugr.es/fisim/
+
+  Contact:    fernan@decsai.ugr.es  fernan@decsai.ugr.es 
+
+  Supplementary information: 
+Supplementary data are available at Bioinformatics online.
+abstract  
+
+  Introduction 
+  sec:Intro 
+
+One of the main goals of the computational biology is to understand how the expression of genes is controlled, unraveling gene regulatory networks. Cells control the abundance and activity of proteins by means of diverse factors where transcription regulation plays a central role. Multiple events are involved in the initiation of transcription of a gene. One of the more important ones is the binding of several proteins, called transcription factors (TFs), to DNA locations of the gene, called transcription factor binding sites (TFBSs). TFBSs are usually located close to the transcription start site (TSS) of the gene and upstream from it, however sometimes TFBSs can be found downstream the TSS or, in rare instances, even within exons (  Transcription ). These interactions between DNA and proteins play a crucial role in controlling the expression of the genes by activating or inhibiting the transcription machinery.
+
+The identification of binding sites bound by transcription factors is then a key problem in predicting transcription regulation. Sometimes a given TF can bind to only one TFBS, but usually the same TF can bind to different DNA sequences and its binding preferences are represented by means of the so-called   regulatory motifs . There are a lot of works discussing the convenience of the different regulatory motifs representations (e.g.   Osada ). These motifs are usually presented as matrices that represent the binding affinity of the TFs, derived from a multiple alignment of confirmed binding sites for a given transcription factor. Most of existing approaches for computing motifs similarity represent the motifs by means of position frequency matrices (PFMs) that record the position-dependent frequency of each nucleotide, or position weights matrices (PWMs) of score values that give a weighted match to any given substring of fixed length.
+
+With the emergence of high-throughput technologies (e.g. ChIP-chip, microarrays, etc.) more than a hundred algorithms for finding motifs have appeared. These algorithms usually filter their outputs in order to improve their significance, e.g. merging similar motifs. However, within the resultant motifs lists there often exist several motifs that are still redundant. Motifs represented by the same or very similar patterns, are candidates to be bound by the same TF. Therefore a comparison technique is necessary to find the redundancies and remove them in order to clarify the output.
+
+The existing algorithms apply different strategies to overcome other's approaches drawbacks, usually implying new or different limitations. One common approach is to use various of these algorithms and compound their outputs (  algorithms ). In this case, motifs found by different algorithms can either correspond to the same TFBSs or to different ones, making the compounded result very noisy and imprecise. All of this evidences the need of new comparison methods to find similar motifs to be either removed or merged into a new motif.
+
+The results of these tools, specially when dealing with large datasets, are usually large lists of motifs that need further post-processing work in order to make them meaningful, e.g. motifs similar to already known motifs might be found. For this task a comparison method between motifs is also necessary.
+
+Hence, the definition of accurate similarity measures between motifs is needed in order to compare and merge motifs properly. The most common strategy is to consider the columns of the matrices as probability distributions and make use of statistical techniques to define a measure between motifs, testing whether the two columns belong to the same distribution or not    Gap  made use of a dynamic programming alignment approach for comparing DNA motifs allowing gaps in the alignments. We focus on ungapped alignments of motifs, hence we do not compare to their approach. .
+
+  PCC  used a straightforward algorithm based on the Pearson correlation coefficient (PCC).   ALLR  proposed the average log-likelihood ratio (ALLR) to perform motif columns comparisons.   Chi2  made the comparison by means of a Pearson   ^2 test (PCST)  They also proposed the Fisher-Irwin exact test (FIET) providing poorer results. 
+. In addition, Kullback-Leibler divergence (KLD) has been used to compare motifs (  KLD ).   ED , instead of comparing distributions, used the euclidean distance (ED) between columns and obtained promising results. In addition,   Tomtom  developed an algorithm (Tomtom) that admits any column-to-column measure. They compute p-values of the match scores for the columns of the query motif aligned with a given target motif. They obtained best results when using euclidean distance. More recently,   Mosta  introduced the concept of a    natural  measure between motifs. They proposed that two motifs should be considered similar if they yield a high number of overlapping hits on a random sequence. They considered the number of hits as a random variable and described a method based on the covariance to measure the columns correlation.
+
+Most of proposed methods present two main drawbacks:
+itemize  
+  The importance given to the similarity of highly conserved positions of the motif is the same as the importance given to the similarity of poorly conserved positions, ignoring the real meaning of the motif representation, i.e. TF binding preferences. 
+  It is assumed, usually trying to keep a robust mathematical base, that all motifs are created equal, i.e. all motifs are equally likely to be transcription factors and nucleotides probabilities are independent from one another. However, this has been proved to be wrong because the nature of TF interactions imposes constraints on the types of motifs that are likely to be TFBSs (  Eisen ). Hence, methods developed under this assumption might lead to wrong or non-accurate results.
+itemize  
+
+There is a need of similarity measures for motifs that deal with these kind of problems.   Zadeh  proposed the fuzzy set theory to mathematically model the imprecision inherent to some concepts. Briefly, fuzzy set theory allows an object to partially belong to a set with a membership degree between 0 and 1. Classical set theory is a special case of its fuzzy counterpart in which membership and certainty degrees are restricted to be either 0 or 1. Fuzzy concepts have been successfully applied to many different areas, including control, pattern recognition, and data mining, e.g. classification and clustering (  fuzzyApplications ). During last years, some works have appeared that integrate fuzzy solutions to solve biological problems like microarays analysis, proteins location, etc., showing promising results (  Transcription,ProteinLocation ). In our case, fuzzy concepts are specially suitable for the tasks of motifs comparison and detection. For example, a given TF might bind to more than one TFBSs, presenting more affinity to bind to some DNA patterns than to others. Therefore, in the matrix representation of the motifs, the binding preferences of each position (column) can be thought as the fuzzy membership degrees to sets of the four DNA nucleotides (A, C, G, T).
+
+One important concept in fuzzy technology is the fuzzy integral proposed by   Sugeno . Fuzzy integrals are a type of non-linear functions dependent on fuzzy measures. It combines the importance of the sources with additional information provided. This way, fuzzy integrals are capable of representing the interaction among the attributes and of combining them to make the result more significant than just the sum of the individual comparisons.
+
+In this paper we present FISim (Fuzzy Integral Similarity), a novel similarity measure to compare two motifs to one another based on the fuzzy integral with respect to a fuzzy measure. FISim intends to overcome the existing drawbacks exposed above: it does not need to make any assumption about the probabilities of occurrence of the nucleotides in order to satisfy its formal definitions. In addition, more importance is given to the similarity of better conserved positions (see Figure   fig:conservedComparison ), agreeing with the biological binding properties of TFs to TFBSs (more details in section   sec:Methods ).
+
+As explained above, one of the main applications of a motif similarity measure is to use it as the basis for clustering procedures to group related TFBSs together. Previous works either make use of hierarchical clustering methods (  Mahony ) or define modifications of the PAM algorithm to obtain the grouping (  Mosta ). In this work, we present a novel clustering methodology called kcmeans (kernel c-means) based on kernel methods and the c-means algorithm combined with our FISim measure. We use kcmeans to cluster motifs obtained from Jaspar database (  Jaspar ), and compare our results to those from existing approaches.
+
+In the remainder of the paper, we firstly present the concepts used for the definition of the novel measure and the clustering methodology. Secondly we compare our measure and clustering methods with the existing approaches. Finally we discuss the results and describe the conclusions.
+
+
+
+  Methods 
+  sec:Methods 
+In this section we present our similarity measure and the proposed cluster methodology, as well as we introduce the concepts used for their definitions. A review of the alternative approaches for measuring motifs similarities can be found in the Supplementary Material.
+  Fuzzy Measures 
+Let X =   x 1,x 2...,x n   be a finite set, let A,B   X, and let  (X) the power set of X. A fuzzy measure,  , is a real valued function   :   (X)   [0,1], satisfying the following properties:
+eqnarray*  
+1. &  ( ) = 0    and    (X) = 1. 
+
+2. &  (A)    (B)    if   A   B.
+eqnarray*  
+The reader should note that the additivity condition of probability theory is relaxed in property 2 to the condition of monotonicity.
+
+For a fuzzy measure  , let  (  x i  )= ^i. The mapping x i   ^i is known as    fuzzy density function . The fuzzy density of a single element x i   X,  ^i, can be interpreted as the importance of x i in determining the set X.
+
+Due to the nature of the definition of a fuzzy measure  , the measure of the union of two disjoints subsets cannot be directly computed from the component measures. In other words, the fuzzy measure value of a subset is more than just the sum of the measures of its elements. Therefore, in order to define a fuzzy measure one needs to know not only the individual fuzzy densities of the elements of the measured set, but also the measure for each combination of them. This information can be supplied by an expert or extracted from the problem definition. However, when dealing with sets of numerous elements this task might become noisy, tedious or even unfeasible.
+   -Fuzzy Measures. 
+  lambdaFuzzy 
+  Sugeno  shed light on this problem introducing a new type of fuzzy measures called  -fuzzy measures. A      -fuzzy measure  satisfies the properties of fuzzy measures plus the following additional property:   for all   A,B   X    and   A   B =  ,
+equation  
+  eq:sugeno 
+ (A   B) =  (A) +  (B) +    (A) (B),   for some     > -1.
+equation  
+Furthermore it can be proved that   can be obtained by solving:
+equation  
+  eq:lambda 
+  + 1 =    i=1 ^n(1 +    ^i).
+equation  
+Therefore, applying equation (  eq:sugeno ) and (  eq:lambda ) one will only need to know the individual fuzzy densities of the elements,  ^i, (i = 1, ,n), in order to construct the fuzzy measure.  
+
+  Fuzzy Integral 
+
+Let X =   x 1, ,x n   be a finite set which represents a set of n information sources. Let h:X [0,1] represent a function that matches each element of X to its evidence. Let suppose that h(x 1)   h(x 2)       h(x n)  If it is not the case for any element, then reorder X so that the relation holds. , and let   :   (X)   [0,1] be a fuzzy measure. Then the fuzzy integral of h with respect to  fuzzy measure   is
+equation  
+  eq:fuzzyIntegral 
+e =  ^n  i=1 [ (h(x i), (A i))],
+equation  
+where A i =   x 1,  ,x i  . Reader should note that if   is a  -fuzzy measure, then  (A i) can be obtained applying equation (  eq:sugeno ).
+
+The fuzzy integral considers the evidence supplied by each element of a given set and the worth of each subset of elements (by means of a fuzzy measure) in its decision making process. This combination of the importance of the sources and the information provided makes the fuzzy integral appropriate for information fusion. Due to its ability to deal with uncertainties associated to the data extracting and processing procedures, it has been widely applied in pattern recognition and classification (  Keller,Sugeno ).
+
+  FISim 
+
+Using PFMs for the representation of the motifs, we propose a novel column-to-column motif similarity called FISim (Fuzzy Integral Similarity). FISim is based on the fuzzy integral of the distances of the nucleotides frequencies with respect to the level of conservation of the positions. Our main purposes were    a)  favor the influence of the higher conserved positions of the motifs, and    b)  get rid of previous assumptions about the probabilities of occurrences the nucleotides within the motifs.
+
+Let  b m  be the frequency of the nucleotide b     A,C,G,T   in the column m. Let C 1= (A  C 1 ,C  C 1 ,G  C 1 ,T  C 1 ) and C 2=(A  C 2 ,C  C 2 ,G  C 2 ,T  C 2 ) be the two columns to be compared. Let X=  (A  C 1 ,A  C 2 ), (C  C 1 ,C  C 2 ), (G  C 1 ,G  C 2 ), (T  C 1 ,T  C 2 )   the set of information sources. To simplify the notation we label the pairs with a single letter so that X=  A,C,G,T .
+
+As it was said above, fuzzy integrals need of a function to be integrated (the so-called h function). Without any assumption about the values of the nucleotides frequencies, h can be defined as h(i) = 1 -   i  C 1  -  i  C 2   ,  where i =   A,C,G,T  , i.e. the similarity of the nucleotide i in the two columns  C 1  and  C 2 .
+
+In addition, a fuzzy measure is needed to determine the relative importance of the subset of elements being considered. Taking advantage of the properties explained in section   lambdaFuzzy , we can define a  -fuzzy measure  , constructed from the fuzzy densities of the individual elements  ^i. In our case,  ^i =  (i  C 1 ,i  C 2 ), where i    A,C,G,T  , i.e. the maximum level of conservation of the two nucleotides, favoring the importance of higher conserved positions. At this point, we can just apply equation (  eq:lambda ) to obtain  , and equation (  eq:sugeno ) to finally get the fuzzy measure  . It can be easily proved that   fulfils the properties 1 and 2 of the fuzzy measures. Once we have h and   it is straightforward to obtain the fuzzy integral applying equation (  eq:fuzzyIntegral ). 
+An example of the computation can be found in the Supplementary Material.
+
+For the similarity between two PFMs composed by multiple columns, we average the similarities of the columns considering the best of all possible alignments between the PFMs as well as their reversed complementary sequences. The algorithm pseudocode can be found in Figure   fig:pseudocode .
+
+
+
+figure  
+codebox  
+    Fuzzy Integral Sim (C 1,C 2) 
+    bases      A,C,G,T  
+    i     bases 
+      h(i)   1-   i  C 1  -  i  C 2   
+     ^i    (i  C 1 ,i  C 2 )
+ 
+    bases      Sort    bases    with respect to   h
+         ^ h(  bases (1))   
+    curSet        bases (1)  
+      SOLVE equation (  eq:lambda )
+    i   2   4
+        curSet      curSet  +   bases (i)
+          +  (  curSet ),  applying equation  (  eq:sugeno )   for   
+ 
+    sim      min (h(  bases (1)), (1))
+    i   2   4
+        curSim      min (h(  bases (i)), (i))
+        curSim  >   sim 
+          sim      curSim 
+   
+ 
+      sim 
+codebox  
+  FISim pseudocode. For motifs compounded by multiple columns, the average between the similarities of their columns is computed. The final similarity is the best of all possible alignments between the PFMs as well as their reversed complementary sequences 
+  fig:pseudocode 
+figure  
+
+
+
+  Kernel C-Means 
+
+One of the main advantages of motif measures is that they can be incorporated to clustering procedures to group related TFBSs together. There exist two known approaches: apply hierarchical clustering methods (  Mahony ); or adapt the PAM (Partition Around Medoids) algorithm (  Mosta ). Hierarchical methods present problems when dealing with noisy data, as is the case. Also, they suffer of a lack of robustness and solutions may be dependent on the data order. Moreover, PAM implementations present the drawback that they need to define medoids between elements that may not belong to metric spaces. Here, we propose a novel clustering methodology called kcmeans (kernel c-means) based on the well-known c-means algorithm, kernel methods, and our FISim measure.
+
+  c-means. 
+c-means clustering (  Hartigan ) is a maximization of expectation algorithm that minimize the following cost function:equation   c-means  cost =   i=1 ^ c      j=1 ^ n    k=1 ^ n M  ji M  ki D  jk      l=1 ^ n M  li    cMeans equation  
+
+where c is the number of clusters, n is the number of objects to cluster, D is the pairwise distance matrix, and M is a binary stochastic matrix M {0,1}^ n  k  where M  ji =1 if object j is in cluster i.
+
+  Kernel methods. 
+Given a space X of objects we want to classify, cluster, rank, etc., we can define a function  :X  F to a feature space F that eases X classification, clustering, ranking, etc. For example, objects could be more separable in F than in X. Imagine we have a real-valued function k:X  X   and for each x,y  X, k(x,y) tells us how similar x and y are in F. k is called a kernel function and can be defined as the inner product in F: k(x,y)= (x)  (y). In fact, most of the times F is hard or impossible to compute,   e.g.  it could be infinite dimensional. A learning method that uses k to avoid F computation is called a kernel method. More on this topic can be found in   libroKernel .
+
+Let us call P=  x  1 ,x  2 ,...,x  n    the set of objects to be analyzed. We can construct a kernel matrix K  i,j =k(x  i ,x  j ), x  i ,x  j   X. K can be thought as a similarity matrix in F and it is the only way kernel methods access data. For K to be a kernel, it must be semidefinite positive, i.e. all its eigenvalues must be non-negative.
+
+Any learning algorithm that can be formulated in terms of inner products can be interpreted as a kernel method if we replace the inner product with a kernel function. This is known as the kernel trick (  libroKernel ) and allows us to convey kernel ideas to clustering, as we will show 
+below.
+
+
+
+  kcmeans. 
+  subSubSec:kcmeans 
+c-means algorithm uses the distances between the objects to cluster. However, FISim is a similarity measure, therefore we need to convert the similarities into distances. If the similarity is an inner product, we can compute the distance between objects i and j as D  ij =S  ii +S  jj -2*S  ij . Also, if we want a similarity S to be an inner product, we have to force it into a kernel. A kernel is a positive semidefinite matrix, i.e. all its eigenvalues should be non-negative. Therefore, we can obtain a matrix S' preserving the positive eigenvalues and corresponding eigenvectors of S  Reader should note that this transformation implies losing some information, however it is expected to be the least significative. . Our proposed clustering methodology works as follows: we obtain a symmetric matrix of motifs similarities S using FISim, we get rid of negative eigenvalues to produce a kernel S', which is an inner product. Finally, we compute the distance matrix D  ij =S  ii +S  jj -2*S  ij  and then apply c-means to cluster.
+
+
+
+  Results 
+  sec:Results 
+
+  Distinguishing randomized motifs 
+  sub:Measures-performance 
+  Random columns. 
+We wanted to prove the performance of FISim in measuring the differences between sets of random single columns. In order to do so, we generated datasets derived from random    seeds  columns where existing methods have shown a good behavior (  PCC,Chi2 ). We considered 25 randomly generated    seed  columns. We controlled the information content (IC) to be uniformly distributed in the interval [0.01,2]. For each one of the 25    seed  motifs, a true dataset was generated of 50000 single columns. In order to match with the properties of real motifs (  Statistical ), each column in the true datasets was obtained by sampling its corresponding    seed  column from a Dirichlet distribution with a random sample size between 25 and 35 (  Chi2 ). A false dataset was generated in a similar manner: the process is the same as for the true datasets but we skipped the sampling from    seed  columns. We tested the effectiveness of the methods in the following experiment: for each of the 25 true datasets, we computed the similarity of each column and its    seed  column, together with the similarity of each column in the false dataset and the same    seed  column. We considered a success when a bigger similarity is given to a column in the true dataset. In Figure   subFig:randomColumns  we show the power (selectivity) of the methods when the FDR (False Discovery Rate) is set to 0.01  Measures proposed by   Mosta  and   Tomtom  are not computed since they need of longer motifs to provide a significant result. . All the methods present good results when IC gets higher. However, ALLR and PCC do not work properly when the IC is low. It can be seen that FISim shows a very good performance in recognizing random columns.
+
+
+  Random motifs. 
+  subSec:randomMotifs 
+We tested the performance of FISim in measuring the differences between sets of random motifs. Here we considered 20 randomly generated    seed  motifs of a fixed length of 6 nucleotides, again controlling the distribution of the IC of the motifs. The IC was uniformly ranged from 1.5 to 10.5. For each one of the 20    seed  motifs, a true dataset was generated containing 10000 motifs. In order to match with the properties of real motifs (  Statistical ), each motif in the true datasets was obtained as follows:
+
+A    random  motif of a random length between 6 and 14 was generated. The corresponding    seed  motif was sampled from a Dirichlet distribution with a random sample size between 25 and 35 (  Chi2 ), generating a    sample  motif of length 6. Finally, starting on a random position, the columns in the    random  motif are replaced by the    sample  motif.
+
+Similarly, a false dataset was generated. The process is the same as for the true datasets but we omitted the insertion of samples from    seed  motifs. Figure   subFig:randomMotifs  shows the power of the methods in recognizing motifs generated from the    seed  motifs when the FDR is 0.01. Once again FISim shows a very good performance in a random dataset. Surprisingly, the method proposed by   Mosta  shows unstable results.
+
+figure  [!tpb]
+ [Random Columns] 
+  subFig:randomColumns 
+ [scale=0.3] fig2.png  
+ 
+ [Random Motifs] 
+  subFig:randomMotifs 
+ [scale=0.3] fig3.png 
+ 
+  Power of the methods to recognize random PFMs generated by the same distribution. 
+  fig:randomALL 
+figure  
+
+  Distinguishing conserved and non-conserved motifs 
+
+  Case of study. 
+  subSec:caseOfStudy 
+We wanted to demonstrate the ability of the measures in discriminating the importance of non-conserved positions and well-conserved positions. In Figure   subFig:Motifs  we show three motifs. We used the one in the middle as a    reference . It has well-conserved positions in the odd locations (permutations of the column vector [10,2,2,2]), and  non-conserved positions in the even locations (from column vector [4,4,4,4]). This   reference  motif was compared to the other two motifs to check how each measure performs:
+itemize  
+  Motif A is composed by non-conserved columns. Therefore, it matches perfectly with the even positions of the   reference  motif. However, the similarity between odd positions (well-conserved) is expected to be low.
+  Motif B is composed by two kind of columns:   a)  well-conserved positions in the odd locations that match perfectly with the corresponding positions of the    reference  motif, and   b)  medium-conserved positions (derived from permutations of the vector [7,7,1,1]) in the odd locations that differ from the odd positions of the   reference  motif.
+itemize  
+Note that both of motifs A and B perfectly match half of the positions of the   reference  motif, while differ in the other half of the positions. These differences are controlled to be balanced, in the sense that the   raw distance   We call   raw distance  to the sum of the absolute value of the four differences between the counts of the nucleotides of the two columns.  of the different positions is the same, e.g.   raw distance  between [10,2,2,2] and [4,4,4,4] (  reference  motif and motif A differences) equals to the   raw distance  between [4,4,4,4] and [7,7,1,1] (  reference  motif and motif B differences).
+
+We then considered two cases for each of the measures:   case 1 : distance between motif A and   reference  motif, and   case 2 : distance between motif B and   reference  motif. As it was explained in section   sec:Intro , it would be desirable that the distance for   case 2  is lower than the distance   case 1 , since, unlike motif A, motif B and   reference  motif share the similarities in the most conserved positions of the motifs. In Figure   subFig:grafica  we show the ratio of the distances for   case 1  against   case 2 . It can be seen that our measure outperforms the others providing a distance much lower for   case 2 . Three of the measures ( ^2, KLD and ALLR) failed to capture this property and provided a lower distance for   case 1   We do not show results for the measures proposed by   Mosta  nor   Tomtom  since they need a background dataset to work properly. .
+
+
+
+figure  [!tpb]
+ 
+ [Motifs] 
+  subFig:Motifs 
+  fig4aV.png  
+ 
+ [Ratio of distances for the different approaches.] 
+  subFig:grafica 
+ [scale=1.2] fig4b1.png 
+ 
+  Distinguishing conserved and non-conserved motifs. 
+  fig:conservedComparison 
+figure  
+
+
+
+  Related motifs. 
+We extended the last experiment to check the performance of the methods in a long dataset of related motifs. We generated a    reference  motif of lenght 8 composed by four well-conserved positions and four non-conserved positions used as a    reference  (see section   subSec:caseOfStudy  for more details). Then, we obtained four pairs of    seed  motifs. Each pair of    seeds  is composed by one    close  motif and one    distant  motif to the    reference  one. Within each pair, both of the motifs present the same number of position dissimilar to the    reference  motif. For example, in Figure   fig:relMotifs  motifs present three different positions.    Close  motifs present the dissimilarities in the non-conserved positions, while    distant  motifs present the dissimilarities in the conserved positions. First pair has one different position, second pair has two, and so on. See Supplementary Material for sequence logos (  Logos ). Following the instrutions of section   subSec:randomMotifs , for each pair of    seeds  we generated a dataset for the    close  motif and a dataset for the    distant  motif. For each motif in the datasets we compute its distance to the    reference motif . We called a correct classification when a smaller distance is assigned to the    close  motifs, and called an incorrect classification otherwise. We sorted the motifs with respect to their distances, and from this sorted set of motifs we compute a ROC (Receiver Operating Characteristic) curve (  ROC ). ROC curves plot the percentage of correct classifications as a function of incorrect classifications through the motif set. In Figure   fig:related  we show the ROC curves obtained from the different approaches for the case of three different positions. It can be seen that our proposed method FISim outperforms the rest of the methods. Similar results are obtained for the rest of the cases. The area under the curves (AUC) scores can be found in the Supplementary Material.
+
+
+figure  [h]
+ 
+ [scale=1.4] fig5.png 
+  Related motifs with three dissimilar positions. 
+  fig:relMotifs 
+figure  
+
+figure  [!tpb]
+ 
+ [scale=0.4] fig6 1.png 
+  ROC curves for the case of three different columns. FISim provides a more consisten classification than the rest of the mehods. 
+  fig:related 
+figure  
+
+
+
+  Clustering real data 
+In order to check the performance of kcmeans in separating related motifs, we used the freely accesible Jaspar (  Jaspar ) database for our experiments. Jaspar contains 71 nonzinc-finger motifs divided in 11 classes acording to the structural properties of transcription factors (Table   tab:Jaspar ). Following the indications of   Chi2 , for each motif we computed its core region. In order to obtain a symmetric matrix, comparisons between two motifs were made by averaging the similarity between the core region of the first motif and the second motif, and the similarity between the first motif and the core region of the second motif. Once we obtained the similarity matrix, we applied the    kcmeans  clustering method proposed in section   subSubSec:kcmeans .
+
+table  [h]
+  Jaspar family distribution  tab:Jaspar  
+ tabular   lclc  
+
+Family & Number of motifs & Family & Nunmber of motifs 
+ 
+ETS & 7 & TRP & 5 
+
+FORKHEAD & 8 & HMG & 6  
+ 
+BHLH &  10 & HOMEO & 8 
+
+bZIP EBP & 4 & NUCLEAR & 8 
+
+MADS & 5 & bZIP CREB & 4
+
+REL & 6 & & 
+ 
+
+tabular   
+ Summary of the Jaspar classification. There exist 71 motifs divided into 11 families. 
+table  
+
+
+To obtain the optimal number of clusters (k), we proceeded similarly to previous works (  Mahony,Mosta ) using the leave-one-out-cross-validation (LOOCV) approach. The optimal clustering of the 11 motifs classes was found for k=15. The 15 clusters as well as the logos of the motifs within each cluster can be found in the Supplementary Material. 
+figure  [!tpb]
+ 
+ [scale=0.4] fig7.png 
+  bZIP CREB group retrieved by kcmeans. Observe the common TGAC consensus. 
+  fig:creb 
+figure  
+
+To ensure the quality of the clustering, we compared our results to those provided by   Mosta . We obtained 15 clusters (eleven homogeneous) and found eight outliers (i.e. motifs not clustered) in comparison to 14 clusters (ten homogeneous) and twelve outliers in   Mosta . Hence, we added more motifs to the final clustering, and obtained a similar homogeneous structure. Figure   fig:creb  shows the sequence logos of the bZIP CREB group. Next, we explain the results of a deeper study of the clusterings.
+
+Two identical clusters are obtained: NUCLEAR and bZIP CREB. The same MADS and HOMEO groups are provided but we yielded a MADS motif within the HOMEO group. MADSs motifs present the consensus CCA*A, while HOMEO motifs present the consensus ATTA. The missing MADS motif contains the consensus ATT showing that FISim measure certainly gives more importance to better conserved positions (see Supplementary Material for sequence logos). We presented the REL family in two clusters, while in   Mosta  appears together in the same cluster. The same two TRPs clusters are obtained but we added one extra motif to one cluster that   Mosta  considered as an outlier. This motif shares the consensus C*GTT with the motifs in its cluster. The same bZIP cEBP group are provided, although we added six out of the seven ETSs motifs. Here, the high conservation of the consensus of the dinucleotide TT force them to belong to the same cluster. We yielded the same two BHLH clusters, but we added one BHLH motif, considered as an outlier in   Mosta , as well as the remaining ETS motif to one of the clusters.   Mosta  presented the FORKHEAD and HMG groups in one single cluster in comparison to three homogeneous clusters we obtained. Finally, the heterogeneous cluster we produced is composed by one extra FORKHEAD motif that does not contains the consensus GTTTA present in the FORKHEAD group. Therefore, we consider that our algorithm provided a more realistic clustering for Jaspar motifs.
+
+  Discussion 
+  sec:Discussion 
+
+We have introduced a new measure of similarity for regulatory motifs called FISim. FISim is based on the fuzzy integral and takes advantage of the fuzzy concepts to overcome some of the known difficulties arised in measuring motifs tasks. The main differences with other approaches are two:    i)  FISim does not need to make any previous assumption about the probabilities of occurrence of the nucleotides in a motif, and    ii)  it considers not only the distance between the PFMs columns, but also the relative importance of each occurrence within each column.
+
+Another advantage of our method is that, in spite of the use of advanced mathematical techniques, it does not make use any arbitrary parameter or threshold, unlike some of the existing approaches (e.g.   Mosta ). This makes FISim more reliable and robust since results are directly comparable and easier to interpret. A simple experiment shows how other measures fail in capturing realistic differences (see Figure   fig:conservedComparison ). Furthermore, it is noteworthy how the naive Euclidean distance (  ED ) inherently seems to assign more importance to better conserved positions (see Figure   fig:conservedComparison ). This could explain why   Tomtom  and   Mahony  found the best performance of their methods when using the Euclidean distance to compare the motifs.
+
+As explained above, FISim is based on the fuzzy integral theory. Fuzzy integrals have been proved to be very suitable for information fusion. This combination of the evidence supplied by the information sources (nucleotides frequencies) and the importance of each subset of information sources (nucleotides conservation level) is very interesting in motifs recognition tasks. When dealing with long random datasets, we show that FISim provides excellent results in terms of motif recognition, similar to those obtained applying existing methods. This was expected since the probability of overlapping within random motifs is low, making easier to recognize the origin of one motif from the others. Some methods performs poorly when the ICs are low (e.g. ALLR and PCC), however, FISim also provides good results under those circumstances.
+
+This task gets more complicated when motifs are related to each other. In this case, it is noteworthy that the Tomtom algorithm provides very good results for higher IC values. However, FISim provides better results, especially when the IC of the motifs gets lower, i.e. when it is more difficult to recognize the motifs, which makes FISim particularly interesting. This is specially valuable when facing real problems such as determining if a putative motif has been already described, clustering related motifs together, etc.
+
+
+Our proposed cluster methodology (kcmeans) makes use of FISim and the kernel theory to avoid problems found when applying other classical methods (i.e. definition of a medoid, data order dependence, etc.). The study of the performance of kcmeans in real data shows good results in terms of accuracy and cluster compactness. The comparison of our results to those from similar experiments shows a better global behavior and a more accurate grouping of the motifs.
+
+
+  Conclusion 
+  sec:Conclusions-and-future 
+In this work we have introduced a new similarity measure for motifs and a novel clustering methodology based on the fuzzy integral and kernel technology respectively. Unlike most of the existing measures, we do not make any previous assumption about the nucleotides probabilities in the measure definition. Our measure takes into account the relative importance of each nucleotide within a given position. We show that our method outperforms other approaches in motifs recognition tasks, and prove that it can be successfully applied to our proposed clustering methodology.
+
+Since fuzzy technology is specially suitable for problems that deal with imprecise concepts, we are currently working on a fuzzy algorithm that applies the proposed methodology to find    de novo  motifs in large sets of DNA sequences.
+
+  Acknowledgement 
+  sec:Acknowledgement 
+This work has been carried out as part of projects TIC-640 of J. A., Sevilla and TIN2006-13177 of DGICT, Madrid.
+
+
+thebibliography    
+
+ [Crooks    et al. , 2004] Logos  Crooks,G.E.    et al.  (2004) Weblogo: A sequence logo generator.    Genome Res. ,    14 , 1188-1190.
+
+ [Choi    et al. , 2004] ED  Choi,I.    et al.  (2004) Local feature frequency profile: A method to measure structural similarity in proteins.    PNAS ,    101 , 3797-3802.
+
+ [Eisen, 2005] Eisen  Eisen,M.B. (2000) All motifs are not created equal: structural properties of transcription factor DNA interactions and the inference of sequences specificity,    Genome Biol ,    6 , P7.
+
+ [Fogel    et al. , 2005] Statistical  Foge,G.B.    et al.  (2005) A statistical analysis of the TRANSFAC data    Biosystems ,    81 (2), 137-154.
+
+ [Gupta    et al. , 2007] Tomtom  Gupta,S.    et al.  (2007) Quantifying similarity between motifs    Genome Biol. ,    8 , R24.
+
+
+ [Hanley and McNeil, 1982] ROC  Hanley,J.A. and McNeil,B.J. (1982) The meaning and use of the area under a receiver operating characteristic (ROC) curve.    Radiology ,    143 : 29-36.
+
+ [Hartigan, 1975] Hartigan  Hartigan,J. (1975) Clustering Algorithms,    John Wiley & Sons ,    New York , NY.
+
+ [Herrero    et al. , 2001] Herrero  Herrero,J.    et al.  (2001) A hierarchical unsupervised growing neural network for clustering gene expression patterns,    Bioinformatics     17 , 126-136.
+
+ [Huang and Li, 2004] ProteinLocation  Huang,Y. and Li,Y. (2004) Prediction of protein subcellular locations using fuzzy k-NN method.    Bioinformatics ,    20 , 21-28.
+
+ [Keller    et al. , 2000] Keller  Keller,J.    et al.  (2000) Fuzzy Integrals in Image Processing and Recognition.    Fuzzy Measures and Integrals: Theory and Applications , pp 435-466.
+
+ [Mahony    et al. , 2007] Mahony  Mahony,S.    et al.  (2007)DNA Familial Binding Profiles Made Easy: Comparison of Various Motif Alignment and Clustering Strategies,    PLoS Comput. Biol. ,    3 , 578-591.
+
+ [Osada    et al. , 2004] Osada  Osada,R.    et al.  (2004) Comparative analysis of methods for representing and searching for transcription factor binding sites,    Bioinformatics     20 , 3516-3525.
+
+ [Pietrokovski, 1996] PCC  Pietrokovski,S. (1996) Searching databases of conserved sequence regions by aligning protein multiple-alignments    Nucleic Acids Res. ,    24 , 3836-3845.
+
+ [Roepcke    et al. , 2005] KLD  Roepcke,S.    et al.  (2005) T-Reg Comparator: an analysis tool for the comparison of position weight matrices.    Nucleic Acids Res. ,    33 , 438-441.
+
+ [Sandelin and Wasserman, 2004] Gap  Sandelin,A. and Wasserman,W.W. (2004) Constrained binding site diversity within families of transcription factors enhances pattern discovery bioinformatics.    J. Mol. Biol. ,    338 , 207-215.
+
+ [Scholkopf    et al. , 2004] libroKernel Scholkopf,B.    et al.  (2004) Kernel Methods in Computational Biology.    The MIT Press , Cambridge, MA.
+
+ [Schones    et al. , 2005] Chi2  Schones,D.E.    et al.  (2005) Similarity of position frequency matrices for transcription factor binding sites,    Bioinformatics     21 , 307-313.
+
+ [Sugeno, 1977] Sugeno  Sugeno,M. (1977) Fuzzy measures and fuzzy integralss: A survey.    Fuzzy Automata and Decision Processes , pp. 89-102, Amsterdam, The Netherlands.
+
+ [Wang and Stormo, 2003] ALLR  Wang,T. and Stormo,G.D. (2003) Combining phylogenetic data with co-regulated genes to to identify regulatory motifs.    Bioinformatics     19 , 2369-2380.
+
+ [Pan, 2006] Transcription  Pan,Y. (2006) Advances in the Discovery of cis-Regulatory Elements.    Current Bioinformatics ,    1 , 321-336.
+
+ [Pape    et al. , 2008] Mosta  Pape,U.J.    et al.  (2008) Natural similarity measures between position frequency matrices with an application to clustering.    Bioinformatics ,    24 , 350-357.
+
+ [Sandelin    et al. , 2008] Jaspar  Sandelin,A.    et al.  (2004) JASPAR: An open-access database for eukaryotic transcription factor binding profiles.    Nucleic Acids Res. ,    32 : D91-D94.
+
+ [Tompa    et al. , 2005] algorithms  Tompa,M    et al.  (2005)  Assessing Computational Tools for the Discovery of Transcription Factor Binding Sites.    Nature Biotechnology ,    23 (1):137-144.
+
+ [Woolf and Wang, 2000] Microarrays  Woolf,P.J. and Wang,Y. (2000) A fuzzy logic approach to analyzing gene expression data.    Phisiol Genomics ,    3 (1): 9-15.
+
+ [Zadeh, 1965] Zadeh  Zadeh,L. (1965) Fuzzy Sets.    Information and Control ,    8 , pp. 338-353.
+
+ [Zimmerman, 2001] fuzzyApplications  Zimmerman,H.J. (2001) Fuzzy sets theory and its applications.    Kluwer Academic Publishers , Norwell, MA.
+
+thebibliography  
+
+document  
+
+
+
+
+

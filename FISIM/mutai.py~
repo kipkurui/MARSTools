@@ -1,0 +1,7 @@
+mutai=open("./Mutai_Final_Drought_ESTs.fas","r")
+output=open("./sequence.fa","w")
+for i in mutai:
+	if i.startswith(">"):
+		output.write("\n\n"+i)
+	else:
+		output.write(i.strip()
