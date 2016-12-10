@@ -28,7 +28,7 @@ from matplotlib import pyplot as plt
 from scipy import stats
 from sklearn import metrics
 
-from MARS_Suite.utils import rotate_image
+from MARSTools.utils import rotate_image
 #from back_ups.libkmersvm import *
 
 #################################################################################

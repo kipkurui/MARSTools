@@ -25,7 +25,7 @@ def run_fisim(tf, meme_file, results_folder, figure=False):
     """
 
     tf_path = "%s/%s" % (results_folder, tf)
-    os.chdir("%s/MARS_Suite/FISIM" % BASE_DIR)  # May need to rethink the location of the scripts
+    os.chdir("%s/MARSTools/FISIM" % BASE_DIR)  # May need to rethink the location of the scripts
     os.system("python fisim.py -fileList %s -o %s.fisim -core -ID" % (meme_file, tf_path))
     os.chdir(BASE_DIR)
 
