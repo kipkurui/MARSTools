@@ -29,7 +29,7 @@ from scipy import stats
 from sklearn import metrics
 
 from MARS_Suite.utils import rotate_image
-from back_ups.libkmersvm import *
+#from back_ups.libkmersvm import *
 
 #################################################################################
 # TODO: Get all the functions working well and in generic forms and then
@@ -676,16 +676,16 @@ def get_kmer_dict_rev(kmerscore, kmer_name):
     return combined_dict, kmer_name
 
 
-def get_g_kmer2id(k):
-    g_kmer2id = {}
-    kmers = generate_kmers(k)
-    rcmap = generate_rcmap_table(k, kmers)
-    for i in xrange(len(kmers)):
-        g_kmer2id[kmers[i]] = rcmap[i]
-    for i in xrange(len(kmers)):
-        g_kmer2id[kmers[i]] = rcmap[i]
-
-    return g_kmer2id
+# def get_g_kmer2id(k):
+#     g_kmer2id = {}
+#     kmers = generate_kmers(k)
+#     rcmap = generate_rcmap_table(k, kmers)
+#     for i in xrange(len(kmers)):
+#         g_kmer2id[kmers[i]] = rcmap[i]
+#     for i in xrange(len(kmers)):
+#         g_kmer2id[kmers[i]] = rcmap[i]
+#
+#     return g_kmer2id
 
 
 def get_svm_list(kmer_svmw_dict, name):

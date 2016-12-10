@@ -87,6 +87,7 @@ def run_centrimo(tf, chip_seq_list, test_meme_input, files_path, figure=False):
         import glob
         for i in glob.glob('%s/*' % tmp_path):
             os.remove(i)
+        os.rmdir(tmp_path)
 
     test_list[0].append("Average")
     for i in range(1, len(test_list)):
