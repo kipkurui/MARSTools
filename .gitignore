@@ -30,3 +30,4 @@ crashlytics-build.properties
 sys
 *.pyc
 *~
+Data/hg19.fa
