@@ -42,7 +42,7 @@ def run_fisim(tf, meme_file, results_folder, figure=False):
     os.system("python fisim.py -fileList %s -o %s.fisim -core -ID" % (meme_file, tf_path))
     os.chdir(BASE_DIR)
 
-    fisim_df = pd.read_table(tf_path+'.fisim', index_col="Motifs")
+    fisim_df = pd.read_table(tf_path + '.fisim', index_col="Motifs")
     # Eliminate Duplicates
     fisim_df = fisim_df.drop_duplicates()
     fisim_df = fisim_df.T.drop_duplicates().T
@@ -71,6 +71,7 @@ def plot_heatmap_fisim(fisim_input, figure_output):
     test = plt.setp(cg.ax_heatmap.xaxis.get_majorticklabels(), rotation=90)
     fig = plt.gcf()
     fig.savefig(figure_output, bbox_inches='tight')
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:

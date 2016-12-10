@@ -34,6 +34,7 @@ Usage:
 """
 
 import os
+import sys
 from math import exp
 
 import numpy as np
@@ -45,7 +46,6 @@ from sklearn import metrics
 
 from MARSTools.kmer_scoring import get_kmer_dict_rev
 from MARSTools.utils import rotate_image
-from back_ups.kmer_svm.libkmersvm import *
 
 #################################################################################
 # #TODO: Convert the functions to classes and optimize the performance
@@ -255,7 +255,7 @@ def sumlogoddsscore(pwm_dictionary, seq):
                     q = pwm_dictionary[seq[j + i]][j]
                     q_rc = pwm_dictionary_rc[seq[j + i]][j]
                     if q == 0 or (q_rc == 0):
-                        q = 0.000000000000000000000000000001  
+                        q = 0.000000000000000000000000000001
                         # make this as close to zero as possible
                         q_rc = 0.000000000000000000000000000001
                     else:
@@ -294,7 +294,7 @@ def maxlogoddsscore(pwm_dictionary, seq):
                     q = pwm_dictionary[seq[j + i]][j]
                     q_rc = pwm_dictionary_rc[seq[j + i]][j]
                     if q == 0 or q_rc == 0:
-                        q = 0.000000000000000000000000000001  
+                        q = 0.000000000000000000000000000001
                         # make this as close to zero as possible
                         q_rc = 0.000000000000000000000000000001
                     else:
@@ -304,7 +304,7 @@ def maxlogoddsscore(pwm_dictionary, seq):
                 log_odds_score_rc += (np.log(q_rc / 0.25) / np.log(2)) * 100
             log_odds_list.append(log_odds_score)
             # FIXME: There was an error here in which we did not include 
-            #the reverse complement in the computation
+            # the reverse complement in the computation
             log_odds_list.append(log_odds_score_rc)
         max_log_odds = max(log_odds_list)
         return max_log_odds
@@ -435,7 +435,7 @@ def compute_auc(predicted, cutoff, label):
     """
     y = np.concatenate((np.ones(cutoff), np.zeros(cutoff)), axis=0)
 
-    fpr, tpr, thresholds = metrics.roc_curve(y, predicted[:cutoff*2], pos_label=label)
+    fpr, tpr, thresholds = metrics.roc_curve(y, predicted[:cutoff * 2], pos_label=label)
 
     auc = metrics.auc(fpr, tpr)
 
@@ -565,7 +565,7 @@ def score_chipseq(chip_seq, score_function, user_motif_details):
 
 
 #############################################################################
-# Run the complete Motif assesment as a function
+# Run the complete Motif assessment as a function
 #############################################################################
 
 
@@ -649,14 +649,14 @@ def run_all(tf, scoring_function, user_motif, chip_seq_list, results_folder_path
     if type(user_motif) is list:
 
         # A crude way of determining the assessment i'm running
-        
+
         tf_names = user_motif
         for mot_name in tf_names:
             kmer_name = mot_name.split("/")[-1]
             user_motif_details = get_kmer_dict_rev(mot_name, kmer_name)
 
             run_assess(score_option, summary_output_file, raw_output_file, user_motif_details, chip_seq_list)
-        
+
     else:
         tf_names = get_tf_names(user_motif)
         for mot_name in tf_names:
@@ -750,6 +750,7 @@ def plot_histogram_assess(assess_input, figure_output):
     f.savefig(figure_output + ".eps", bbox_inches='tight')
     f.savefig(figure_output + ".png", bbox_inches='tight')
 
+
 if __name__ == '__main__':
     if len(sys.argv) < 6:
         print __doc__
@@ -761,6 +762,3 @@ if __name__ == '__main__':
     results_path = sys.argv[5]
 
     run_all(tf_par, scoring_fun, user_motif, chip_list, results_path)
-
-
-
