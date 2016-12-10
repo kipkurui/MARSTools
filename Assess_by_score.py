@@ -1,10 +1,15 @@
 """
-Assess_motif is a python module for assessing the motif Performance using
-ChIP-seq.
+Author: Caleb Kibet
+
+run_centrimo.py contains functions to run a motif enrichment analysis using CentriMo,
+summarize and plot the data.
+
 Requires:
-    -> A motif file in meme format
-    -> ChIP-seq file (for now) in tab delimited format Chr score sequence
-    -> A motif scoring framework to use:
+
+
+Takes as input:
+    TF name
+    A motif scoring function to use:
         -gomeroccupancyscore
         -sumoccupancyscore
         -maxoccuopancyscore
@@ -12,13 +17,23 @@ Requires:
         -sumlogoddsscore
         -maxlogoddsscore
         -amaoccupancyscore
-        - A few k-mer test functions
-    -> Output file
- Usage:
-     python Assess_by_score.py <tf> <scoring_function> <user_motif> <chip_seq_list> <results_folder_path>
+        - A few k-mer test functions:
+            - max_kmer_score_pos
+            - max_kmer_score
+            - sum_kmer_score
+
+    A list of ChIP-seq files formatted in TAB rather than FASTA format.
+     Provide a folder with the files
+    A motif file in MEME format
+    A repository to put results
+
+Usage:
+    python Assess_by_score.py <tf> <scoring_function> <user_motif> <chip_seq_list> <results_folder_path>
+    #TODO: Add one from the example folder
+    e.g python Assess_by_score.py <tf> <scoring_function> <user_motif> <chip_seq_list> <results_folder_path>
 """
+
 import os
-import sys
 from math import exp
 
 import numpy as np
@@ -28,12 +43,12 @@ from matplotlib import pyplot as plt
 from scipy import stats
 from sklearn import metrics
 
+from MARSTools.kmer_scoring import get_kmer_dict_rev
 from MARSTools.utils import rotate_image
-#from back_ups.libkmersvm import *
+from back_ups.kmer_svm.libkmersvm import *
 
 #################################################################################
-# TODO: Get all the functions working well and in generic forms and then
-# separate out ChIP-seq and PBM main programs
+# #TODO: Convert the functions to classes and optimize the performance
 ##################################################################################
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -354,7 +369,7 @@ def amaoccupancyscore(pwm_dictionary, seq):
 
 
 ###############################################################################
-# TODO convert the scoring function into class object to reduce
+# TODO convert the scoring function into class object to reduce repeats
 ##############################################################################
 
 
@@ -550,7 +565,7 @@ def score_chipseq(chip_seq, score_function, user_motif_details):
 
 
 #############################################################################
-# Run the complete assess program as a function
+# Run the complete Motif assesment as a function
 #############################################################################
 
 
@@ -600,7 +615,7 @@ def run_assess(score_function, summary_output, raw_output, user_motif_details, c
 
 score_extensions = {"gomeroccupancyscore": 'gomer', "energyscore": 'energy', "amaoccupancyscore": 'ama',
                     "maxoccupancyscore": 'maxoc', "sumlogoddsscore": 'sumlog', "maxlogoddsscore": 'maxlog',
-                    "sumoccupancyscore": 'sumoc', "energy_score_kmer": 'energymer', "kmersvm_score_seq": 'kmersvm',
+                    "sumoccupancyscore": 'sumoc', "energy_score_kmer": 'energymer',
                     "max_score_kmer": 'max_kmer', "max_score_kmer_pos": 'max_kmer_pos'}
 
 
@@ -637,15 +652,8 @@ def run_all(tf, scoring_function, user_motif, chip_seq_list, results_folder_path
         
         tf_names = user_motif
         for mot_name in tf_names:
-            global g_kmer2id
-            g_kmer2id = get_g_kmer2id(8)
             kmer_name = mot_name.split("/")[-1]
-            if score_option == "kmersvm_score_seq":
-                kmer_svmw_dict = get_kmer_dict_rev(mot_name, kmer_name)
-                user_motif_details = get_svm_list(kmer_svmw_dict[0], kmer_name)
-
-            else:
-                user_motif_details = get_kmer_dict_rev(mot_name, kmer_name)
+            user_motif_details = get_kmer_dict_rev(mot_name, kmer_name)
 
             run_assess(score_option, summary_output_file, raw_output_file, user_motif_details, chip_seq_list)
         
@@ -657,169 +665,10 @@ def run_all(tf, scoring_function, user_motif, chip_seq_list, results_folder_path
 
         # call the plotting function
         plot_info(tf, scoring_function, results_folder_path)
-###############################################################################
-#
-#    kmer scoring stuff
-#
-#############################################################################
 
 
-def get_kmer_dict_rev(kmerscore, kmer_name):
-    test = pd.read_table(kmerscore, index_col="8-mer", usecols=["8-mer", "E-score"])
-    test.fillna(0, inplace=True)
-    test2 = pd.read_table(kmerscore, index_col="8-mer.1", usecols=["8-mer.1", "E-score"])
-    test2.index.name = "8-mer"
-    test2.fillna(0, inplace=True)
-    combined = test.append(test2)
-    combined_dict = combined.to_dict()["E-score"]
-
-    return combined_dict, kmer_name
-
-
-# def get_g_kmer2id(k):
-#     g_kmer2id = {}
-#     kmers = generate_kmers(k)
-#     rcmap = generate_rcmap_table(k, kmers)
-#     for i in xrange(len(kmers)):
-#         g_kmer2id[kmers[i]] = rcmap[i]
-#     for i in xrange(len(kmers)):
-#         g_kmer2id[kmers[i]] = rcmap[i]
-#
-#     return g_kmer2id
-
-
-def get_svm_list(kmer_svmw_dict, name):
-    # svmw_list = []
-    svmw = [0]*(2**(2*8))
-
-    for kmer in kmer_svmw_dict.keys():
-        svmw[g_kmer2id[kmer]] = kmer_svmw_dict[kmer]
-
-    svmw_list = np.array(svmw, np.double)
-
-    return svmw_list, name
-
-
-def kmersvm_score_seq(kmer_svmw_dict, seq):
-    """calculate SVM score of given sequence using single set of svm weights
-
-    Arguments:
-    s -- string, DNA sequence
-    kmer_svmw_dict -- A dictionary of kmers
-    kmerlen -- integer, length of k-mer of SVM weight
-
-    Return:
-    SVM score
-    """
-    kmerlen = 8
-    kmer2id = g_kmer2id
-    x = [0]*(2**(2*kmerlen))
-    for j in xrange(len(seq)-kmerlen+1):
-        x[kmer2id[seq[j:j+kmerlen]]] += 1
-
-    x = np.array(x, np.double)
-    score_norm = np.dot(kmer_svmw_dict, x)/np.sqrt(np.sum(x**2))
-
-    return score_norm
-
-revcompl = lambda x: ''.join([{'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}[B] for B in x][::-1])
-
-
-def score_kmer(kmer, kmerdict, revcompl):
-    score = 0
-    if kmer in kmerdict:
-        score = float(kmerdict[kmer])
-    else:
-        kmer2 = revcompl(kmer)
-        score = float(kmerdict[kmer2])
-    return score
-
-
-def energy_score_kmer(kmerdict, seq):
-    k_mers = find_kmers(seq, 8)
-    tot_score = 0
-    for kmer in k_mers:
-        if kmer in kmerdict:
-            score = float(kmerdict[kmer])
-        else:
-            kmer2 = revcompl(kmer)
-            score = float(kmerdict[kmer2])
-        tot_score += score
-    return tot_score
-
-
-def max_score_kmer(kmerdict, seq):
-    k_mers = find_kmers(seq, 8)
-    tot_score = []
-    for kmer in k_mers:
-        if kmer in kmerdict:
-            score = float(kmerdict[kmer])
-        else:
-            score = 0.0
-            #kmer2 = revcompl(kmer)
-            #score = float(kmerdict[kmer2])
-        tot_score.append(score)
-    return max(tot_score)
-
-
-def max_score_kmer_pos(kmerdict, seq):
-    k_mers = find_kmers(seq, 8)
-    tot_score = []
-    for kmer in k_mers:
-        if kmer in kmerdict:
-            score = float(kmerdict[kmer])
-        else:
-            score = 0.0
-            #kmer2 = revcompl(kmer)
-            #score = float(kmerdict[kmer2])
-        tot_score.append(score)
-    max_pos = tot_score.index(max(tot_score))
-    
-    return sum(tot_score[max_pos-4:max_pos+4])
-
-
-def find_kmers(string, kmer_size):
-    kmers = []
-    for i in range(0, len(string)-kmer_size+1):
-        kmers.append(string[i:i+kmer_size])
-    return kmers
-
-
-def getkey(item):
-    return item[1]
-
-
-# def get_kmer_dict_rev(kmerscore, kmer_name):
-#
-#     test = pd.read_table(kmerscore, index_col="8-mer", usecols=["8-mer", "E-score"])
-#     test = test[test["E-score"] >0.35]
-#     scoredict = test.to_dict()["E-score"]
-#     # with open(kmerscore) as kmers:
-#     #     print kmerscore
-#     #     for line in kmers:
-#     #         ke, rems, val = line.split("\t")
-#     #
-#     #         scoredict[ke] = val
-#     return scoredict, kmer_name
-
-
-def get_kmer_dict(kmerscore, kmer_name):
-    """
-    Convert the forward and reverse kmers into a dictionary
-    for a quick look-up and scoring of sequences
-    """
-    test = pd.read_table(kmerscore, index_col="8-mer", usecols=["8-mer", "E-score"])
-    test.fillna(0, inplace=True)
-    test2 = pd.read_table(kmerscore, index_col="8-mer.1", usecols=["8-mer.1", "E-score"])
-    test2.index.name = "8-mer"
-    test2.fillna(0, inplace=True)
-    combined = test.append(test2)
-    combined_dict = combined.to_dict()["E-score"]
-
-    return combined_dict, kmer_name
-    
 ##############################################################################
-# Plotting
+# Plotting fuctions
 ###############################################################################
 
 
@@ -874,7 +723,7 @@ def plot_histogram_assess(assess_input, figure_output):
     eaborn.docset/Contents/Resources/Documents/stanford.edu/
     _mwaskom/software/seaborn/tutorial/axis_grids.html
     """
-    # print "We got to plot histogram"
+
     sns.set_style("white")
     raw_auc = pd.read_table(assess_input, index_col="Motif")
     raw_auc = raw_auc.drop_duplicates()
@@ -907,11 +756,11 @@ if __name__ == '__main__':
         sys.exit(1)
     tf_par = sys.argv[1]
     scoring_fun = sys.argv[2]
-    user_mot = sys.argv[3]
+    user_motif = sys.argv[3]
     chip_list = sys.argv[4]
     results_path = sys.argv[5]
 
-    run_all(tf_par, scoring_fun, user_mot, chip_list, results_path)
+    run_all(tf_par, scoring_fun, user_motif, chip_list, results_path)
 
 
 

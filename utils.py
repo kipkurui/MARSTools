@@ -44,3 +44,6 @@ def rotate_image(figure_in, figure_out):
     src_im = PIL.Image.open(figure_in)
     im = src_im.rotate(270, expand=True)
     im.save(figure_out)
+
+
+revcompl = lambda x: ''.join([{'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}[B] for B in x][::-1])

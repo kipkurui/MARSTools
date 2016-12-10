@@ -1,7 +1,20 @@
 """
 Author: Caleb Kibet
 
-Rank motifs using FISim
+run_fisim.py contains functions to evaluate and rank motifs based on consistency using
+FISim tools, summarize and plot the results.
+
+Requires:
+    meme 4.10.0 obtainable from http://meme-suite.org/doc/download.html?man_type=web
+
+Takes as input:
+    TF name
+    A motif file in MEME format
+    A repository to output results
+
+Usage:
+    python run_centrimo.py <Tf_name> <chip-seq_list> <test_meme_file> >results_path>
+    eg: python run_centrimo.py Cjun  <test_meme_file> >results_path>
 """
 
 import os

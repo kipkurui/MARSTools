@@ -1,17 +1,28 @@
 """
 Author: Caleb Kibet
-This module contains functions to run a motif enrichment analysis using CentriMo,
-summarize and plot the data. 
+
+run_centrimo.py contains functions to run a motif enrichment analysis using CentriMo,
+summarize and plot the data.
 
 Requires:
     meme 4.10.0 obtainable from http://meme-suite.org/doc/download.html?man_type=web
 
+Takes as input:
+    TF name
+    A list of ChIP-seq files formatted in TAB rather than FASTA format.
+     Provide a folder with the files
+    A motif file in MEME format
+    A repository to put results
+
 Usage:
-    python run_centrimo.py <Tf_name> <chip-seq_list> <test_meme_file> <test_meme_file> >results_path>
+    python run_centrimo.py <Tf_name> <chip-seq_list> <test_meme_file> >results_path>
+    eg: python run_centrimo.py Cjun  <test_meme_file> >results_path>
 """
+
 
 import os
 import sys
+import glob
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,10 +32,14 @@ import seaborn as sns
 from utils import tab2fasta, mkdir_p, meme_path, BASE_DIR
 
 
-def run_centrimo(tf, chip_seq_list, test_meme_input, files_path, figure=False):
+def run_centrimo(tf_name, chip_seq_list, test_meme_input, files_path, figure=False):
     """
+    Given a list paths to test data and a MEME file, perform motif enrichment analysis
+    of the motifs in the sequences and use the output to rank the motif performance
 
-    :param tf:
+    Assumes that half the input data are test and the rest are used as background
+
+    :param tf_name:
     :param chip_seq_list:
     :param test_meme_input:
     :param files_path:
@@ -37,6 +52,7 @@ def run_centrimo(tf, chip_seq_list, test_meme_input, files_path, figure=False):
         random.seed(10)
         chip_seq_list = random.sample(chip_seq_list, 10)
 
+
     test_list = [["Motif"]]  # get list of motifs in meme file
     with open(test_meme_input) as motifs:
         for motif_line in motifs:
@@ -45,7 +61,7 @@ def run_centrimo(tf, chip_seq_list, test_meme_input, files_path, figure=False):
 
     def get_centrimo_list(chip_name):
         """
-        Extracts important details form a CentriMo run output
+        Extracts important details from a CentriMo run output
         """
         with open(chip_name) as cent:
             temp_dict = {}
@@ -64,19 +80,22 @@ def run_centrimo(tf, chip_seq_list, test_meme_input, files_path, figure=False):
                 test_list[mot].append(0)
 
     for chip_seq in chip_seq_list:
+        # Get file name from the path
         file_name = chip_seq.split('/')[-1].split('.')[0]
 
         test_list[0].append(file_name)
-        tmp_path = '%s/%s/tmp' % (files_path, tf)
+        tmp_path = '%s/%s/tmp' % (files_path, tf_name)
         mkdir_p(tmp_path)
 
+        # Convert the tab file to FASTA
+        # TODO: Also allow input as FASTA
         tab2fasta(chip_seq, '%s/%s.fa' % (tmp_path, file_name), '%s/%s.bg' % (tmp_path, file_name))
 
         os.system("%s/fasta-get-markov  %s/%s.fa %s/%s.fa.bg" % (meme_path, tmp_path, file_name, tmp_path, file_name))
         os.system("%s/centrimo --oc %s/%s --verbosity 1 --local --optimize_score --score 5.0 "
                   "--ethresh 100000.0 --neg %s/%s.bg --bfile %s/%s.fa.bg %s/%s.fa %s" %
-                  (meme_path, tmp_path, file_name, tmp_path, file_name, tmp_path, file_name, tmp_path, file_name, test_meme_input))
-        # centrimo_raw = "%s/MATOM/static/files/%s/%s_centrimo.txt" % (BASE_DIR, tf, tf)
+                  (meme_path, tmp_path, file_name, tmp_path, file_name, tmp_path,
+                   file_name, tmp_path, file_name, test_meme_input))
 
         get_centrimo_list("%s/%s/centrimo.txt" % (tmp_path, file_name))
 
@@ -84,7 +103,6 @@ def run_centrimo(tf, chip_seq_list, test_meme_input, files_path, figure=False):
         import shutil
         shutil.rmtree('%s/%s/' % (tmp_path, file_name))
 
-        import glob
         for i in glob.glob('%s/*' % tmp_path):
             os.remove(i)
         os.rmdir(tmp_path)
@@ -93,24 +111,28 @@ def run_centrimo(tf, chip_seq_list, test_meme_input, files_path, figure=False):
     for i in range(1, len(test_list)):
         test_list[i].append(np.mean(test_list[i][1:]))
     test_list.sort(key=lambda x: x[-1], reverse=True)
-    with open('%s/%s_centrimo.txt' % (files_path, tf), 'w') as cent_out:
+
+    with open('%s/%s_centrimo.txt' % (files_path, tf_name), 'w') as cent_out:
         for i in test_list:
             cent_out.writelines('\t'.join(map(str, i)) + '\n')
-    cent = pd.read_table('%s/%s_centrimo.txt' % (files_path, tf), index_col=0)
-    del cent['Average']
-    a = cent/cent.max()
-    b = a.replace(to_replace='NaN', value=0)
-    Av = b.T.mean()
-    Av = Av.to_frame(name="Average")
-    plot = b.T.append(Av.T).T
+    centrimo_df = pd.read_table('%s/%s_centrimo.txt' % (files_path, tf_name), index_col=0)
+    del centrimo_df['Average']
 
-    plot.sort(columns="Average", axis=0, ascending=False, inplace=True)
-    plot.to_csv('%s/%s_centrimo_norm.txt' % (files_path, tf), sep="\t")
+    centrimo_normalized = centrimo_df/centrimo_df.max()
+    centrimo_normalized = centrimo_normalized.replace(to_replace='NaN', value=0)
+    average_column = centrimo_normalized.T.mean()
+    average_column = average_column.to_frame(name="Average")
 
-    cent_path = '%s/%s_centrimo_norm.txt' % (files_path, tf)
+    # Add the average column to DataFramne
+    centrimo_normalized = centrimo_normalized.T.append(average_column.T).T
+
+    centrimo_normalized.sort(columns="Average", axis=0, ascending=False, inplace=True)
+    centrimo_normalized.to_csv('%s/%s_centrimo_norm.txt' % (files_path, tf_name), sep="\t")
+
+    cent_path = '%s/%s_centrimo_norm.txt' % (files_path, tf_name)
     if figure:
-        plot_centrimo(cent_path, '%s/%s_centrimo.png' % (files_path, tf))
-        plot_centrimo(cent_path, '%s/%s_centrimo.eps' % (files_path, tf))
+        plot_centrimo(cent_path, '%s/%s_centrimo.png' % (files_path, tf_name))
+        plot_centrimo(cent_path, '%s/%s_centrimo.eps' % (files_path, tf_name))
 
 
 def plot_centrimo(centrimo_in, figure_output):
@@ -128,8 +150,6 @@ def plot_centrimo(centrimo_in, figure_output):
     test = plt.setp(cg.ax_heatmap.yaxis.get_majorticklabels(), rotation=0)
     test = plt.setp(cg.ax_heatmap.xaxis.get_majorticklabels(), rotation=90)
 
-    # sns.clustermap(centrimo_table, method='single', metric="euclidean",
-    #                z_score=None, row_cluster=False, col_cluster=True)
     f = plt.gcf()
     f.savefig(figure_output, bbox_inches='tight')
 
