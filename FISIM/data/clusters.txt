@@ -1,0 +1,4 @@
+TCF3_DBD	Guertin_TCF3_2	MA0522.1
+Tcf3(HMG)/mES-Tcf3-ChIP-Seq(GSE11724)/Homer	UP00058_1	Guertin_TCF3_3
+Guertin_TCF3_1	Guertin_TCF3_4
+UP00058_2	sci09.v1_Tcf3_3787	sci09.v2_Tcf3_3787

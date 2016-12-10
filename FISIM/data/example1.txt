@@ -1,0 +1,3 @@
+FISim value: 0.8688994
+Start position: 3
+Reverse opposite: False
