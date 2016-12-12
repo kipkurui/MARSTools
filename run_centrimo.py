@@ -126,7 +126,7 @@ def run_centrimo(tf_name, chip_seq_list, test_meme_input, files_path, figure=Fal
     # Add the average column to DataFramne
     centrimo_normalized = centrimo_normalized.T.append(average_column.T).T
 
-    centrimo_normalized.sort(columns="Average", axis=0, ascending=False, inplace=True)
+    centrimo_normalized.sort_values(by="Average", axis=0, ascending=False, inplace=True)
     centrimo_normalized.to_csv('%s/%s_centrimo_norm.txt' % (files_path, tf_name), sep="\t")
 
     cent_path = '%s/%s_centrimo_norm.txt' % (files_path, tf_name)
@@ -143,7 +143,7 @@ def plot_centrimo(centrimo_in, figure_output):
     :return:
     """
     centrimo_table = pd.read_table(centrimo_in, index_col=0)
-    centrimo_table.sort(columns="Average", axis=0, ascending=False, inplace=True)
+    centrimo_table.sort_values(by="Average", axis=0, ascending=False, inplace=True)
 
     cg = sns.clustermap(centrimo_table, method='single', metric="euclidean",
                         row_cluster=False, linewidths=.15)

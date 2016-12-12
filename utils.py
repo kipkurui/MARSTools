@@ -3,7 +3,12 @@ import PIL
 
 from distutils.spawn import find_executable
 
-meme_path = "/%s" % find_executable('meme').strip("/meme")
+try:
+    meme_path = "/%s" % find_executable('meme').strip("/meme")
+except AttributeError:
+    # Temporary setting for my server
+    meme_path = "home/caleb/anaconda2/envs/MARS/bin"
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

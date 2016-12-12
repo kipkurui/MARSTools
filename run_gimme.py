@@ -1,4 +1,5 @@
 import os
+import sys
 
 import pandas as pd
 import seaborn as sns
@@ -7,7 +8,7 @@ from matplotlib import pyplot as plt
 from utils import tab2fasta, rotate_image
 
 
-def run_gimme(tf, user_motif, chip_seq_list, results_path):
+def run_gimme(tf, user_motif, chip_seq_list, results_path, figure=False):
     files_path = '%s/%s' % (results_path, tf)
     gimme_in = "%s/%s_gimme_metrics.txt" % (results_path, tf)
     gimme_out = "%s/%s.gimme" % (results_path, tf)
@@ -81,7 +82,6 @@ def plot_histogram_gimme(gimme_in, gimme_out, figure_out):
 
 
 def meme2gimme(meme, gimme):
-    print "We got to motif conversion"
     with open(meme) as motif:
         with open(gimme, 'w') as gmotif:
             for line in motif:
@@ -102,3 +102,14 @@ def meme2gimme(meme, gimme):
                     continue
                 else:
                     continue
+
+if __name__ == '__main__':
+    if len(sys.argv) < 5:
+        print __doc__
+        sys.exit(1)
+    tf = sys.argv[1]
+    chip_seq_list = sys.argv[2]
+    test_meme_input = sys.argv[3]
+    results_path = sys.argv[4]
+
+    run_gimme(tf, test_meme_input, chip_seq_list, results_path)
