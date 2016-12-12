@@ -20,14 +20,15 @@ def run_gimme(tf, user_motif, chip_seq_list, results_path, figure=False):
 
         os.system("%s/gimme roc %s %s/%s.fa %s/%s.bg >>%s/%s_gimme_metrics.txt" %
                   (meme_path, gimme_mot, results_path, file_name, results_path, file_name, results_path, tf))
-    import glob
-    for i in glob.glob('tmp/*'):
-        os.remove(i)
+    # import glob
+    # for i in glob.glob('tmp/*'):
+    #     os.remove(i)
 
-    plot_histogram_gimme(gimme_in, gimme_out, "%s/%s_gimme.png" % (results_path, tf))
-    plot_histogram_gimme(gimme_in, gimme_out, "%s/%s_gimme.eps" % (results_path, tf))
+    if figure:
+        plot_histogram_gimme(gimme_in, gimme_out, "%s/%s_gimme.png" % (results_path, tf))
+        plot_histogram_gimme(gimme_in, gimme_out, "%s/%s_gimme.eps" % (results_path, tf))
 
-    rotate_image("%s/%s_gimme.png" % (results_path, tf), "%s/%s_gimme_rot.png" % (results_path, tf))
+        rotate_image("%s/%s_gimme.png" % (results_path, tf), "%s/%s_gimme_rot.png" % (results_path, tf))
 
 
 def clean_gimme(gimme_in, gimme_out):
