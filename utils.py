@@ -4,7 +4,7 @@ import PIL
 from distutils.spawn import find_executable
 
 try:
-    meme_path = "/%s" % find_executable('meme').strip("/meme")
+    meme_path = "/%s" % find_executable('meme').strip("meme")
 except AttributeError:
     # Temporary setting for my server
     meme_path = "/home/caleb/anaconda2/envs/MARS/bin"
