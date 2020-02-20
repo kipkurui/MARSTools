@@ -1,9 +1,10 @@
+from __future__ import print_function
 from numpy import *
 
 
 def EOF(f):
     pos = f.tell()
-    print pos,
+    print(pos, end=' ')
     if f.readline():
         f.seek(pos)
         return False

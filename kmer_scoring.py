@@ -5,6 +5,7 @@ A module for scoring sequences using k-mers used by Assess_by_score
 
 """
 
+from builtins import range
 import pandas as pd
 
 from MARSTools.utils import revcompl

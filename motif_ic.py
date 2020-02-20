@@ -3,6 +3,8 @@
 # Modified by Caleb Kibet
 
 from __future__ import print_function
+from __future__ import division
+from past.utils import old_div
 import sys
 from math import log
 import os
@@ -56,17 +58,17 @@ def get_motif_summary_tfid(motif_file, out_file, meme_path, reults_folder):
                         check = 0
                     for val in words:
                         if float(val) > 0:
-                            check += float(val) * log(float(val))/log(2.0)
-                            entropy += float(val) * log(float(val))/log(2.0)
+                            check += old_div(float(val) * log(float(val)),log(2.0))
+                            entropy += old_div(float(val) * log(float(val)),log(2.0))
                     row += 1
                     if row >= n_rows:
                         v = 2*n_rows+entropy
                         out = '%s\t%f\t%f\t%i\t<img src="/static/files/temp/%s.png" alt="My image" class="img-responsive"/>\n'\
-                              % (name, v, (v/n_rows), n_rows, name)
+                              % (name, v, (old_div(v,n_rows)), n_rows, name)
                         write_out.write(out)
                         found = 0
                         row = 0
-                        total_entropy += (v/n_rows)
+                        total_entropy += (old_div(v,n_rows))
 
         mot_list = []
         #os.system("mkdir -p %s/temp" % (reults_folder, tf_name))
@@ -127,17 +129,17 @@ def get_motif_summary(motif_file, raw_file, tf_name, out_file, meme_path, reults
                         check = 0
                     for val in words:
                         if float(val) > 0:
-                            check += float(val) * log(float(val))/log(2.0)
-                            entropy += float(val) * log(float(val))/log(2.0)
+                            check += old_div(float(val) * log(float(val)),log(2.0))
+                            entropy += old_div(float(val) * log(float(val)),log(2.0))
                     row += 1
                     if row >= n_rows:
                         v = 2*n_rows+entropy
                         out = '%s\t%f\t%f\t%i\t%f\t<img src="/static/files/compare/%s/%s/motifs/%s.png" alt="My image" class="img-responsive"/>\n'\
-                              % (name, v, (v/n_rows), n_rows, float(raw_dict[name]), job_no, tf_name, name)
+                              % (name, v, (old_div(v,n_rows)), n_rows, float(raw_dict[name]), job_no, tf_name, name)
                         write_out.write(out)
                         found = 0
                         row = 0
-                        total_entropy += (v/n_rows)
+                        total_entropy += (old_div(v,n_rows))
 
         mot_list = []
         os.system("mkdir -p %s/%s/motifs" % (reults_folder, tf_name))
@@ -193,17 +195,17 @@ def motif_summary(motif_file, raw_file, out_file):
                         check = 0
                     for val in words:
                         if float(val) > 0:
-                            check += float(val) * log(float(val))/log(2.0)
-                            entropy += float(val) * log(float(val))/log(2.0)
+                            check += old_div(float(val) * log(float(val)),log(2.0))
+                            entropy += old_div(float(val) * log(float(val)),log(2.0))
                     row += 1
                     if row >= n_rows:
                         v = 2*n_rows+entropy
                         out = '%s\t%f\t%f\t%i\t%f\t%f\t%f\t%f\n'\
-                              % (name, v, (v/n_rows), n_rows, float(raw_dict[name][0]), float(raw_dict[name][1]),
+                              % (name, v, (old_div(v,n_rows)), n_rows, float(raw_dict[name][0]), float(raw_dict[name][1]),
                                  float(raw_dict[name][2]), float(raw_dict[name][3]))
                         write_out.write(out)
                         #n+= 1
                         #print(n)
                         found = 0
                         row = 0
-                        total_entropy += (v/n_rows)
+                        total_entropy += (old_div(v,n_rows))

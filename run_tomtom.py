@@ -8,7 +8,11 @@ Requires:
 Usage:
     python run_tomtom.py <Tf_name> <test_meme_file>  <results_path>
 """
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
+from past.utils import old_div
 import os
 import sys
 from math import log
@@ -19,7 +23,7 @@ from scipy.stats.mstats import winsorize
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from utils import meme_path
+from .utils import meme_path
 
 
 def run_tomtom(tf, meme_file, results_folder, figure=False):
@@ -69,7 +73,7 @@ def clean_tomtom(tom_in, tom_out):
                   limits=0.05), index=tomtom_matrix.index, columns=tomtom_matrix.columns)
 
     # Normalize
-    tomtom_normalized = tomtom_winz / tomtom_winz.max()
+    tomtom_normalized = old_div(tomtom_winz, tomtom_winz.max())
 
     tomtom_normalized["Average"] = tomtom_normalized.mean()
     tomtom_normalized.sort_values(by="Average", ascending=False, inplace=True)
@@ -98,7 +102,7 @@ def plot_tomtom(tom_in, figure_output):
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
-        print __doc__
+        print(__doc__)
         sys.exit(1)
     tf = sys.argv[1]
     test_meme_input = sys.argv[2]

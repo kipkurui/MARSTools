@@ -1,4 +1,8 @@
-from Assess_by_score import *
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from past.utils import old_div
+from .Assess_by_score import *
 
 ###########################################################################
 # Assess motifs using PBM data
@@ -126,7 +130,7 @@ def run_assess_pbm(score_function, summary_output, raw_output, user_motif_detail
 
                     cell_lab = raw_pbm_data.split('/')[-1].split('_deBruijn')[0]  # Specific to PBM
                     pbm_score = score_pbm(raw_pbm_data, score, user_motif_details)  # Specific to PBM
-                    cut_off = len(pbm_score[1])/2  # use a flexible cut-off dictated by the sze of teh input file
+                    cut_off = old_div(len(pbm_score[1]),2)  # use a flexible cut-off dictated by the sze of teh input file
 
                     au = compute_auc(pbm_score[1], cut_off, label)
                     auc += [au]
@@ -189,7 +193,7 @@ def run_all_pbm(tf, scoring_function, user_motif, pbm_list, results_folder_path)
 # TODO: Add a plotting function independent in each module
 if __name__ == '__main__':
     if len(sys.argv) < 6:
-        print __doc__
+        print(__doc__)
         sys.exit(1)
     tf = sys.argv[1]
     scoring_function = sys.argv[2]

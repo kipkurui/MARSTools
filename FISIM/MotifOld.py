@@ -1,11 +1,21 @@
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 
 # RECORDAR que la de medida de Fisher hace uso de rpy!!!
 
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import string
 import types
-from commands import *
+from subprocess import *
 from math import *
 from random import *
 
@@ -15,11 +25,11 @@ import tomtom
 from Dirichlet import *
 from numpy import *
 
-import fuzzyIntegral
-import utils
+from . import fuzzyIntegral
+from . import utils
 
 
-class Motif:
+class Motif(object):
 	"""Clase que representa un motivo como una PSSM.
 Atributos:
 	mat -> matriz (clase array) con la matriz del PSSM"""
@@ -98,7 +108,7 @@ Requerimientos:
 		elif(consensus != None):
 			self.calculateMotifFromConsensus(consensus)
 		else:
-			print "Wrong usage for PSSM.__init__() -> mat, rand, fileIn and consensus cannot be all false"
+			print("Wrong usage for PSSM.__init__() -> mat, rand, fileIn and consensus cannot be all false")
 
 	def calculateMotifFromConsensus(self,consensus):
 		self.n = len(consensus)
@@ -119,8 +129,8 @@ Requerimientos:
 				mat[i][2] = 0.25
 				mat[i][3] = 0.25
 			else:
-				print "Wrong value for consensus at position",str(i)
-				print "Found", consensus[i], "expected [ACGTN]"
+				print("Wrong value for consensus at position",str(i))
+				print("Found", consensus[i], "expected [ACGTN]")
 				sys.exit(-1)
 		self.matFSM = array(mat,int)
 		self.matPSSM = array(mat,float)	
@@ -211,18 +221,18 @@ Parametros:
 	end: Hasta que posicion del PSSM queremos calcular el IC (debe estar entre start+1 y la longitud del PSSM). Si no se especifica se calcula hasta la ultima posicion (longitud del PSSM)
 Esta implementado en forma vectorial para mejorar la eficiencia pero la formula que implementa es la del IC tipica"""
 		if end and (end > self.n or end <= start):
-			print "Motif.py -> ICarray -> Wrong value for end paramater. It should be in ["+ str(start+1)+","+str(self.n)+"]. Found: "+str(end)
+			print("Motif.py -> ICarray -> Wrong value for end paramater. It should be in ["+ str(start+1)+","+str(self.n)+"]. Found: "+str(end))
 			sys.exit(-1)
 
 		if not start: start = 0 # Si no se especifica el comienzo se empieza por el 0
 		if (start > self.n-1 or start < 0):
-			print "Motif.py -> ICarray -> Wrong value for start paramater. It should be in [0,"+str(self.n-1)+"]. Found: "+str(start)
+			print("Motif.py -> ICarray -> Wrong value for start paramater. It should be in [0,"+str(self.n-1)+"]. Found: "+str(start))
 			sys.exit(-1)
 
 		self.pseudoCountPSSM()
 		#print self.matPSSM
 		
-		matAux = self.matPSSM * (log(self.matPSSM)/log(2))
+		matAux = self.matPSSM * (old_div(log(self.matPSSM),log(2)))
 		if end: matAux = matAux[start:end]
 		else: matAux = matAux[start:]
 		ic = zeros(len(matAux))
@@ -240,18 +250,18 @@ Parametros:
 	end: Hasta que posicion del PSSM queremos calcular el IC (debe estar entre start+1 y la longitud del PSSM). Si no se especifica se calcula hasta la ultima posicion (longitud del PSSM)
 Esta implementado en forma vectorial para mejorar la eficiencia pero la formula que implementa es la del IC tipica"""
 		if end and (end > self.n or end <= start):
-			print "Motif.py -> ICarray -> Wrong value for end paramater. It should be in ["+ str(start+1)+","+str(self.n)+"]. Found: "+str(end)
+			print("Motif.py -> ICarray -> Wrong value for end paramater. It should be in ["+ str(start+1)+","+str(self.n)+"]. Found: "+str(end))
 			sys.exit(-1)
 
 		if not start: start = 0 # Si no se especifica el comienzo se empieza por el 0
 		if (start > self.n-1 or start < 0):
-			print "Motif.py -> ICarray -> Wrong value for start paramater. It should be in [0,"+str(self.n-1)+"]. Found: "+str(start)
+			print("Motif.py -> ICarray -> Wrong value for start paramater. It should be in [0,"+str(self.n-1)+"]. Found: "+str(start))
 			sys.exit(-1)
 
 		self.pseudoCountPSSM()
 		#print self.matPSSM
 		
-		matAux = self.matPSSM * (log(self.matPSSM)/log(2))
+		matAux = self.matPSSM * (old_div(log(self.matPSSM),log(2)))
 		if end: matAux = matAux[start:end]
 		else: matAux = matAux[start:]
 		ic = zeros(len(matAux))
@@ -280,7 +290,7 @@ Devuelve:
 	0 si funciona correctamente"""
 
 		if(motif.matPSSM.shape[0] > self.matPSSM.shape[0]):
-			print "Error. PSSM.insertMotif: El motivo a insertar es mas largo que el PSSM"
+			print("Error. PSSM.insertMotif: El motivo a insertar es mas largo que el PSSM")
 			return -1
 		elif start == -1:
 			pos = arange(0,self.matPSSM.shape[0]-motif.matPSSM.shape[0]+1,1)
@@ -289,7 +299,7 @@ Devuelve:
 
 		else:
 			if (self.matPSSM.shape[0] - start < motif.matPSSM.shape[0]):
-				print "Error. PSSM.insertMotif: El motivo no se puede insertar a partir de la posicion " + str(start) + ". No caberia"
+				print("Error. PSSM.insertMotif: El motivo no se puede insertar a partir de la posicion " + str(start) + ". No caberia")
 				return -1
 		
 		#self.pseudoCount()
@@ -374,7 +384,7 @@ Parametros:
 					num += abs(float(self.matPSSM[i][j]) - float(curPSSM.matPSSM[i+curTime,j]))
 					den += max(float(self.matPSSM[i][j]),float(curPSSM.matPSSM[i+curTime,j]))
 					#print num,den
-				curDist += num / den
+				curDist += old_div(num, den)
                        
 			#curDist = num / den
 			#print curDist
@@ -402,7 +412,7 @@ Parametros:
 				for j in range(4):
 					num += abs(float(revMatrix[i][j]) - float(curPSSM.matPSSM[i+curTime,j]))
 					den += max(float(revMatrix[i][j]),float(curPSSM.matPSSM[i+curTime,j]))
-           			curDist += num / den
+           			curDist += old_div(num, den)
 			#curDist = num / den
 			#print curDist
 			#raw_input()
@@ -461,7 +471,7 @@ Parametros:
 				for j in range(4):
 					num += abs(float(self.matPSSM[i][j]) - float(curPSSM.matPSSM[i+curTime,j]))*max(float(self.matPSSM[i][j]),float(curPSSM.matPSSM[i+curTime,j]))
 					den += max(float(self.matPSSM[i][j]),float(curPSSM.matPSSM[i+curTime,j]))
-				curDist += num / den
+				curDist += old_div(num, den)
 
 			
 			if(curDist < minDist):
@@ -486,7 +496,7 @@ Parametros:
 				for j in range(4):
 					num += abs(float(revMatrix[i][j]) - float(curPSSM.matPSSM[i+curTime,j]))*max(float(revMatrix[i][j]),float(curPSSM.matPSSM[i+curTime,j]))
 					den += max(float(revMatrix[i][j]),float(curPSSM.matPSSM[i+curTime,j]))
-				curDist += num / den
+				curDist += old_div(num, den)
 
 			if(curDist < minDist):
 				#print curTime, "Vez. La distancia se mejora. Pasa a ser:", curDist
@@ -578,7 +588,7 @@ PROGRAMAR!!"""
 		#if(bigger):
 		#	startPosition = 0
 		#print "minsize=",minSize
-		return maxDist/minSize, startPosition, bestRev
+		return old_div(maxDist,minSize), startPosition, bestRev
 
 	def distanceIntegralChoquet(self, curPSSM, bigger=False):
 		"""Calcula la integral difusa de CHOQUET entre dos PSSM. ... Seguir comentando!
@@ -652,7 +662,7 @@ PROGRAMAR!!"""
 		#if(bigger):
 		#	startPosition = 0
 	
-		return maxDist/minSize, startPosition, bestRev
+		return old_div(maxDist,minSize), startPosition, bestRev
 
 			
 
@@ -694,7 +704,7 @@ Parametros:
 					#print num,den
 
                        
-			curDist = num / den
+			curDist = old_div(num, den)
 			#print curDist
 			#raw_input()
 
@@ -720,7 +730,7 @@ Parametros:
 					num += abs(float(revMatrix[i][j]) - float(curPSSM.matPSSM[i+curTime,j]))
 					den += max(float(revMatrix[i][j]),float(curPSSM.matPSSM[i+curTime,j]))
            	
-			curDist = num / den
+			curDist = old_div(num, den)
 			#print curDist
 			#raw_input()
 
@@ -784,7 +794,7 @@ Parametros:
 		T1 = self.matPSSM[0]
 		T2 = curPSSM.matPSSM[0]
 		dif = [math.sqrt((i[0]-i[1])*(i[0]-i[1])) for i in zip(T1,T2)]
-		print "Dist Euclidea = ", sum(dif)
+		print("Dist Euclidea = ", sum(dif))
 		veces = 1
 		for i in range(len(dif)):
 			if dif.count(dif[i]) > 1:
@@ -801,10 +811,10 @@ Parametros:
 		choquet = 0
 		for i in range(len(dif)-1):
 			choquet += d[dif[i]] * (dif[i] - dif[i+1])
-		print T1
-		print T2
-		print dif
-		print d
+		print(T1)
+		print(T2)
+		print(dif)
+		print(d)
 		return choquet
 		
 	def distanceChoquetSuma(self, curPSSM, bigger=False):
@@ -813,7 +823,7 @@ Parametros:
 			T1 = self.matPSSM[indice]
 			T2 = curPSSM.matPSSM[indice]
 			dif = [math.sqrt((i[0]-i[1])*(i[0]-i[1])) for i in zip(T1,T2)]
-			print "Dist Euclidea = ", sum(dif)
+			print("Dist Euclidea = ", sum(dif))
 			veces = 1
 			for i in range(len(dif)):
 				if dif.count(dif[i]) > 1:
@@ -831,11 +841,11 @@ Parametros:
 			for i in range(len(dif)-1):
 				choqTemp += d[dif[i]] * (dif[i] - dif[i+1])
 				choquet += d[dif[i]] * (dif[i] - dif[i+1])
-			print T1
-			print T2
+			print(T1)
+			print(T2)
 			#print dif
 			#print d
-			print "Distancia Choquet temporal = ", choqTemp, "Acumulada = ", choquet 
+			print("Distancia Choquet temporal = ", choqTemp, "Acumulada = ", choquet) 
 			
 			
 		return choquet
@@ -849,7 +859,7 @@ Parametros:
 		T1 = self.matPSSM[:]
 		T2 = curPSSM.matPSSM[:]
 		dif = [math.sqrt((i[0]-i[1])*(i[0]-i[1])) for i in zip(T1,T2)]
-		print "Dist Euclidea = ", sum(dif)
+		print("Dist Euclidea = ", sum(dif))
 		veces = 1
 		for i in range(len(dif)):
 			if dif.count(dif[i]) > 1:
@@ -866,10 +876,10 @@ Parametros:
 		choquet = 0
 		for i in range(len(dif)-1):
 			choquet += d[dif[i]] * (dif[i] - dif[i+1])
-		print "T1 = ", T1
-		print T2
-		print dif
-		print d
+		print("T1 = ", T1)
+		print(T2)
+		print(dif)
+		print(d)
 		
 		self.matPSSM.shape = (dim,4)
 		curPSSM.matPSSM.shape = (dim,4)
@@ -947,7 +957,7 @@ Parametros:
 		self.matPSSM.shape = (4*dimSelf,1)
 		curPSSM.matPSSM.shape = (4*dimCur,1)
 		
-		print "Probando con el revOpp"
+		print("Probando con el revOpp")
 		
 		while (curTime < times):
 			curDist = 0.0
@@ -1035,7 +1045,7 @@ Parametros:
 				for j in range(4):
 					num += abs(float(self.matPSSM[i][j]) - float(curPSSM.matPSSM[i+curTime,j]))
 					den += max(float(self.matPSSM[i][j]),float(curPSSM.matPSSM[i+curTime,j]))
-				curDist += num / den
+				curDist += old_div(num, den)
 				#print num, den, curDist
                        
 			#curDist = num / den
@@ -1064,7 +1074,7 @@ Parametros:
 				for j in range(4):
 					num += abs(float(revMatrix[i][j]) - float(curPSSM.matPSSM[i+curTime,j]))
 					den += max(float(revMatrix[i][j]),float(curPSSM.matPSSM[i+curTime,j]))
-				curDist += num / den
+				curDist += old_div(num, den)
 				#print num, den, curDist
 			#curDist = num / den
 
@@ -1125,13 +1135,13 @@ Parametros:
 				denominator1 = 0.0
 				denominator2 = 0.0
 				for j in range(4):
-					T1 = ((self.matPSSM[i,j]/sumX) - avX)
-					T2 = ((curPSSM.matPSSM[i+curTime,j]/sumY) - avY)
+					T1 = ((old_div(self.matPSSM[i,j],sumX)) - avX)
+					T2 = ((old_div(curPSSM.matPSSM[i+curTime,j],sumY)) - avY)
 					numerator += T1 * T2
 					denominator1 += pow(T1,2)
 					denominator2 += pow(T2,2)
 
-				curCorr += numerator / sqrt((denominator1 * denominator2)) 
+				curCorr += old_div(numerator, sqrt((denominator1 * denominator2))) 
 
 			
 			if(curCorr > maxCorr):
@@ -1161,13 +1171,13 @@ Parametros:
 				denominator1 = 0.0
 				denominator2 = 0.0
 				for j in range(4):
-					T1 = ((revMatrix[i,j]/sumX) - avX)
-					T2 = ((curPSSM.matPSSM[i+curTime,j]/sumY) - avY)
+					T1 = ((old_div(revMatrix[i,j],sumX)) - avX)
+					T2 = ((old_div(curPSSM.matPSSM[i+curTime,j],sumY)) - avY)
 					numerator += T1 * T2
 					denominator1 += pow(T1,2)
 					denominator2 += pow(T2,2)
 				
-				curCorr += numerator / sqrt((denominator1 * denominator2))
+				curCorr += old_div(numerator, sqrt((denominator1 * denominator2)))
 			
 			
 			if(curCorr > maxCorr):
@@ -1222,7 +1232,7 @@ Parametros:
 					numerator2 += float(curPSSM.matPSSM[i+curTime,j]) * math.log((float(self.matPSSM[i,j])/float(sum(self.matPSSM[i,:])))/0.25)
 					denominator += float(self.matPSSM[i,j] + curPSSM.matPSSM[i+curTime,j])
 
-				curALLR += (numerator1 + numerator2) / denominator
+				curALLR += old_div((numerator1 + numerator2), denominator)
 			
 			
 			if(curALLR > maxALLR):
@@ -1249,7 +1259,7 @@ Parametros:
 					denominator += float(revMatrix[i,j] + curPSSM.matPSSM[i+curTime,j])
 
 				
-				curALLR += (numerator1 + numerator2) / denominator
+				curALLR += old_div((numerator1 + numerator2), denominator)
 			
 			
 			if(curALLR > maxALLR):
@@ -1301,10 +1311,10 @@ Parametros:
 					for j in range(4):
 						sumX = float(sum(self.matPSSM[i,:]))
 						sumY = float(sum(curPSSM.matPSSM[i+curTime,:]))
-						probX = self.matPSSM[i,j] / sumX
-						probY = curPSSM.matPSSM[i+curTime,j] / sumY
-						numerator1 += probX * math.log(probX / probY)
-						numerator2 += probY * math.log(probY / probX)
+						probX = old_div(self.matPSSM[i,j], sumX)
+						probY = old_div(curPSSM.matPSSM[i+curTime,j], sumY)
+						numerator1 += probX * math.log(old_div(probX, probY))
+						numerator2 += probY * math.log(old_div(probY, probX))
 
 					curKLD += (numerator1 + numerator2)
 				except:
@@ -1331,10 +1341,10 @@ Parametros:
 					for j in range(4):
 						sumX = float(sum(revMatrix[i,:]))
 						sumY = float(sum(curPSSM.matPSSM[i+curTime,:]))
-						probX = revMatrix[i,j] / sumX
-						probY = curPSSM.matPSSM[i+curTime,j] / sumY
-						numerator1 += probX * math.log(probX / probY)
-						numerator2 += probY * math.log(probY / probX)
+						probX = old_div(revMatrix[i,j], sumX)
+						probY = old_div(curPSSM.matPSSM[i+curTime,j], sumY)
+						numerator1 += probX * math.log(old_div(probX, probY))
+						numerator2 += probY * math.log(old_div(probY, probX))
 
 					curKLD += (numerator1 + numerator2)
 				except:
@@ -1387,8 +1397,8 @@ Parametros:
 				for j in range(4):
 					sumX = float(sum(self.matPSSM[i,:]))
 					sumY = float(sum(curPSSM.matPSSM[i+curTime,:]))
-					probX = self.matPSSM[i,j] / sumX
-					probY = curPSSM.matPSSM[i+curTime,j] / sumY
+					probX = old_div(self.matPSSM[i,j], sumX)
+					probY = old_div(curPSSM.matPSSM[i+curTime,j], sumY)
 					T1 += pow(probX-probY,2)
 
 				curDist += sqrt(T1)
@@ -1412,8 +1422,8 @@ Parametros:
 				for j in range(4):
 					sumX = float(sum(revMatrix[i,:]))
 					sumY = float(sum(curPSSM.matPSSM[i+curTime,:]))
-					probX = revMatrix[i,j] / sumX
-					probY = curPSSM.matPSSM[i+curTime,j] / sumY
+					probX = old_div(revMatrix[i,j], sumX)
+					probY = old_div(curPSSM.matPSSM[i+curTime,j], sumY)
 					T1 += pow(probX-probY,2)
 
 				curDist += sqrt(T1)
@@ -1478,15 +1488,15 @@ Parametros:
 				Nx = sum(x)
 				Ny = sum(y)
 				N = sum(xy)
-				Nex = Nx*xy / N
-				Ney = Ny*xy / N
+				Nex = old_div(Nx*xy, N)
+				Ney = old_div(Ny*xy, N)
 				for index,v in enumerate(Nex):
 					if v == 0: Nex[index] = 0.0000001
 				for index,v in enumerate(Ney):
 					if v == 0: Ney[index] = 0.0000001
 
-				chiX += sum(power(x-Nex,2) / Nex)
-				chiY += sum(power(y-Ney,2) / Ney)
+				chiX += sum(old_div(power(x-Nex,2), Nex))
+				chiY += sum(old_div(power(y-Ney,2), Ney))
 				
 				window.append(stats.lchisqprob(chiX+chiY,3))
 				
@@ -1524,15 +1534,15 @@ Parametros:
 				Nx = sum(x)
 				Ny = sum(y)
 				N = sum(xy)
-				Nex = Nx*xy / N
-				Ney = Ny*xy / N
+				Nex = old_div(Nx*xy, N)
+				Ney = old_div(Ny*xy, N)
 				for index,v in enumerate(Nex):
 					if v == 0: Nex[index] = 0.0000001
 				for index,v in enumerate(Ney):
 					if v == 0: Ney[index] = 0.0000001
 				
-				chiX += sum(power(x-Nex,2) / Nex)
-				chiY += sum(power(y-Ney,2) / Ney)
+				chiX += sum(old_div(power(x-Nex,2), Nex))
+				chiY += sum(old_div(power(y-Ney,2), Ney))
 				window.append(stats.lchisqprob(chiX+chiY,3))
 
 			#print "Window = ", window
@@ -1601,15 +1611,15 @@ Parametros:
 				Nx = sum(x)
 				Ny = sum(y)
 				N = sum(xy)
-				Nex = Nx*xy / N
-				Ney = Ny*xy / N
+				Nex = old_div(Nx*xy, N)
+				Ney = old_div(Ny*xy, N)
 				for index,v in enumerate(Nex):
 					if v == 0: Nex[index] = 0.0000001
 				for index,v in enumerate(Ney):
 					if v == 0: Ney[index] = 0.0000001
 
-				chiX += sum(power(x-Nex,2) / Nex)
-				chiY += sum(power(y-Ney,2) / Ney)
+				chiX += sum(old_div(power(x-Nex,2), Nex))
+				chiY += sum(old_div(power(y-Ney,2), Ney))
 				
 				window.append(stats.lchisqprob(chiX+chiY,3))
 				
@@ -1647,15 +1657,15 @@ Parametros:
 				Nx = sum(x)
 				Ny = sum(y)
 				N = sum(xy)
-				Nex = Nx*xy / N
-				Ney = Ny*xy / N
+				Nex = old_div(Nx*xy, N)
+				Ney = old_div(Ny*xy, N)
 				for index,v in enumerate(Nex):
 					if v == 0: Nex[index] = 0.0000001
 				for index,v in enumerate(Ney):
 					if v == 0: Ney[index] = 0.0000001
 				
-				chiX += sum(power(x-Nex,2) / Nex)
-				chiY += sum(power(y-Ney,2) / Ney)
+				chiX += sum(old_div(power(x-Nex,2), Nex))
+				chiY += sum(old_div(power(y-Ney,2), Ney))
 				window.append(stats.lchisqprob(chiX+chiY,3))
 
 			#print "Window = ", window
@@ -1726,15 +1736,15 @@ Parametros:
 				Nx = sum(x)
 				Ny = sum(y)
 				N = sum(xy)
-				Nex = Nx*xy / N
-				Ney = Ny*xy / N
+				Nex = old_div(Nx*xy, N)
+				Ney = old_div(Ny*xy, N)
 				for index,v in enumerate(Nex):
 					if v == 0: Nex[index] = 0.0000001
 				for index,v in enumerate(Ney):
 					if v == 0: Ney[index] = 0.0000001
 
-				chiX += sum(power(x-Nex,2) / Nex)
-				chiY += sum(power(y-Ney,2) / Ney)
+				chiX += sum(old_div(power(x-Nex,2), Nex))
+				chiY += sum(old_div(power(y-Ney,2), Ney))
 				
 				window.append(stats.lchisqprob(chiX+chiY,3))
 				
@@ -1772,15 +1782,15 @@ Parametros:
 				Nx = sum(x)
 				Ny = sum(y)
 				N = sum(xy)
-				Nex = Nx*xy / N
-				Ney = Ny*xy / N
+				Nex = old_div(Nx*xy, N)
+				Ney = old_div(Ny*xy, N)
 				for index,v in enumerate(Nex):
 					if v == 0: Nex[index] = 0.0000001
 				for index,v in enumerate(Ney):
 					if v == 0: Ney[index] = 0.0000001
 				
-				chiX += sum(power(x-Nex,2) / Nex)
-				chiY += sum(power(y-Ney,2) / Ney)
+				chiX += sum(old_div(power(x-Nex,2), Nex))
+				chiY += sum(old_div(power(y-Ney,2), Ney))
 				window.append(stats.lchisqprob(chiX+chiY,3))
 
 			#print "Window = ", window
@@ -1852,7 +1862,7 @@ Parametros:
 				for i,v in enumerate(den):
 					if v == 0: den[i] = 1
 				
-				chi2 = sum((power((Ny*x -Nx*y),2)) / (den))
+				chi2 = sum(old_div((power((Ny*x -Nx*y),2)), (den)))
 				
 				window.append(stats.lchisqprob(chi2,3))
 				
@@ -1892,7 +1902,7 @@ Parametros:
 				for i,v in enumerate(den):
 					if v == 0: den[i] = 1
 				
-				chi2 = sum((power((Ny*x -Nx*y),2)) / (den))
+				chi2 = sum(old_div((power((Ny*x -Nx*y),2)), (den)))
 				
 				window.append(stats.lchisqprob(chi2,3))
 
@@ -1910,7 +1920,7 @@ Parametros:
 		
 		#print maxChi
 		maxPv = stats.lchisqprob(maxChi,3)
-		print str(maxChi),maxPv
+		print(str(maxChi),maxPv)
 		# Comento esto para que me devuelva siempre la posicion a partir de la cual el mas
 		# pequeno esta contenido en el mas grande	
 		#if(bigger):
@@ -2063,20 +2073,20 @@ Parametros:
 		cmd = "/home/fernan/articuloFuzzyMotifs/weblogo/seqlogo -Sc -f tmp -F PNG -o " + name
 		(status, output) = getstatusoutput(cmd)
 		if(status):
-			print "Error while trying to execute ", cmd
+			print("Error while trying to execute ", cmd)
 		os.remove("tmp")
 
 		if rev:
 			cmd = "/home/fernan/homer/articuloFuzzyMotifs/seqlogo -Sc -f tmpR -F PNG -o " + name + "R";
 			(status, output) = getstatusoutput(cmd)
 			if(status):
-				print "Error while trying to execute ", cmd
+				print("Error while trying to execute ", cmd)
 			os.remove("tmpR")
 
 
 				
 	def readFromFile(self,fileIn, fileType):# 6-3-2008 Pongo lo de especial para que me coja el nombre bien del fichero de jaspar que me he bajado. Es decir ignore el codigo de la matriz y ponga una concatenacion del nombre y la familia (segundo y tecer campo de la primera fila de cada motivo)
-		if type(fileIn) == types.StringType: fileIn = open(fileIn)
+		if type(fileIn) == bytes: fileIn = open(fileIn)
 		header = fileIn.readline().split()
 		if fileType in ['jaspar','JASPAR','Jaspar']:
 			name = header[1] + '-' + header[2]
@@ -2140,7 +2150,7 @@ Parametros:
 	
 	
 	def toFile(self,fileOut,FSM=True):
-		if type(fileOut) == types.StringType: fileOut = open(fileOut,'w')
+		if type(fileOut) == bytes: fileOut = open(fileOut,'w')
 		if self.name == '':
 			name = self.consensus()
 		else:
@@ -2161,12 +2171,12 @@ Parametros:
 				fileOut.write(str(self.matPSSM[i,self.matPSSM.shape[1]-1])+"\n")
 
 	def distances(self,curPSSM, f=None):
-		print "Euclidea = ", self.distanceEuclidean(curPSSM)
-		print "Chi2 = ", self.distanceChi2(curPSSM)
-		print "Fuzzy = ", self.distanceFuzzy(curPSSM)
-		print "Choquet = ", self.distanceChoquetLineal2(curPSSM)
+		print("Euclidea = ", self.distanceEuclidean(curPSSM))
+		print("Chi2 = ", self.distanceChi2(curPSSM))
+		print("Fuzzy = ", self.distanceFuzzy(curPSSM))
+		print("Choquet = ", self.distanceChoquetLineal2(curPSSM))
 		if(f!=None):
-			if type(f) == types.StringType: f = open(f,'w')
+			if type(f) == bytes: f = open(f,'w')
 			self.toFile(f)
 			curPSSM.toFile(f)
 			f.write("Euclidea = " + str(self.distanceEuclidean(curPSSM))+ "\n")

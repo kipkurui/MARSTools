@@ -1,10 +1,18 @@
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import types
 
 from numpy import *
 
-import fuzzyIntegral
+from . import fuzzyIntegral
 
-import utils
+from . import utils
 
 
 class Motif(object):
@@ -38,10 +46,10 @@ class Motif(object):
                 self.calculateFSMFromPSSM()
 
         else:
-            print "Wrong usage for Motif.__init__()"
+            print("Wrong usage for Motif.__init__()")
 
     def readFromFile(self, fileIn):
-        if type(fileIn) == types.StringType:
+        if type(fileIn) == bytes:
             fileIn = open(fileIn)
         flag = 0
 
@@ -159,16 +167,16 @@ Returns a list containing:
             curTime += 1
 
         if fileOut is not None:
-            fileOut.write("FISim value: " + str(maxSim/minSize) + "\n")
+            fileOut.write("FISim value: " + str(old_div(maxSim,minSize)) + "\n")
             fileOut.write("Start position: " + str(startPosition) + "\n")
             fileOut.write("Reverse opposite: " + str(bestRev) + "\n")
 
         if verbose:
-            print "FISim value: " + str(maxSim/minSize)
-            print "Start position: " + str(startPosition)
-            print "Reverse opposite: " + str(bestRev)
+            print("FISim value: " + str(old_div(maxSim,minSize)))
+            print("Start position: " + str(startPosition))
+            print("Reverse opposite: " + str(bestRev))
 
-        return maxSim/minSize, startPosition, bestRev
+        return old_div(maxSim,minSize), startPosition, bestRev
 
 
     def calculateRevMatrixFSM(self):

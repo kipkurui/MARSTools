@@ -8,6 +8,7 @@ Usage:
     python removemasked.py <input-fasta> <output-fasta>
 
 """
+from __future__ import print_function
 import sys
 
 
@@ -27,7 +28,7 @@ def remove_masked(fasta_in, fasta_out):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print __doc__
+        print(__doc__)
         sys.exit(1)
     input_fa = sys.argv[1]
     output_fa = sys.argv[2]

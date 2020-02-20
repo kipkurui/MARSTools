@@ -32,7 +32,12 @@ Usage:
     #TODO: Add one from the example folder
     e.g python Assess_by_score.py <tf> <scoring_function> <user_motif> <chip_seq_list> <results_folder_path>
 """
+from __future__ import division
+from __future__ import print_function
 
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import os
 import sys
 from math import exp
@@ -224,7 +229,7 @@ def sumoccupancyscore(pwm_dictionary, seq):
                     occupancy *= pwm_dictionary[seq[j + i]][j]
                     occupancy_rc *= pwm_dictionary_rc[seq[j + i]][j]
             sum_occupancy += occupancy + occupancy_rc
-        return sum_occupancy / 2
+        return old_div(sum_occupancy, 2)
 
 
 def sumlogoddsscore(pwm_dictionary, seq):
@@ -261,10 +266,10 @@ def sumlogoddsscore(pwm_dictionary, seq):
                     else:
                         q = pwm_dictionary[seq[j + i]][j]
                         q_rc = pwm_dictionary_rc[seq[j + i]][j]
-                    log_odds += (np.log(q / 0.25) / np.log(2)) * 100
-                    log_odds_rc += (np.log(q_rc / 0.25) / np.log(2)) * 100
+                    log_odds += (old_div(np.log(q / 0.25), np.log(2))) * 100
+                    log_odds_rc += (old_div(np.log(q_rc / 0.25), np.log(2))) * 100
             sum_log_odds += log_odds + log_odds_rc
-        return sum_log_odds / 2
+        return old_div(sum_log_odds, 2)
 
 
 def maxlogoddsscore(pwm_dictionary, seq):
@@ -300,8 +305,8 @@ def maxlogoddsscore(pwm_dictionary, seq):
                     else:
                         q = pwm_dictionary[seq[j + i]][j]
                         q_rc = pwm_dictionary_rc[seq[j + i]][j]
-                log_odds_score += (np.log(q / 0.25) / np.log(2)) * 100
-                log_odds_score_rc += (np.log(q_rc / 0.25) / np.log(2)) * 100
+                log_odds_score += (old_div(np.log(q / 0.25), np.log(2))) * 100
+                log_odds_score_rc += (old_div(np.log(q_rc / 0.25), np.log(2))) * 100
             log_odds_list.append(log_odds_score)
             # FIXME: There was an error here in which we did not include 
             # the reverse complement in the computation
@@ -364,7 +369,7 @@ def amaoccupancyscore(pwm_dictionary, seq):
                     occupancy *= pwm_dictionary[seq[j + i]][j]
                     occupancy_rc *= pwm_dictionary_rc[seq[j + i]][j]
             occupancy_list.append(occupancy + occupancy_rc)
-        ama_occupancy = sum(occupancy_list) / len(occupancy_list)
+        ama_occupancy = old_div(sum(occupancy_list), len(occupancy_list))
         return ama_occupancy
 
 
@@ -406,8 +411,8 @@ def energyscore(pwm_dictionary, seq):
                     energy += pwm_dictionary[seq[j + i]][j]
                     energy_rc += pwm_dictionary_rc[seq[j + i]][j]
 
-                energy_list.append(1 / (1 + (exp(energy))))
-                energy_list.append(1 / (1 + (exp(energy_rc))))
+                energy_list.append(old_div(1, (1 + (exp(energy)))))
+                energy_list.append(old_div(1, (1 + (exp(energy_rc)))))
         energy_score = min(energy_list)
         return energy_score
 
@@ -495,7 +500,7 @@ def compute_mncp(predicted, cutoff, label):
     total_rank = stats.rankdata(hstack((fg_vals, bg_vals)))
     slopes = []
     for i in range(len(fg_vals)):
-        slope = ((fg_len - fg_rank[i] + 1) / fg_len) / ((total_len - total_rank[i] + 1) / total_len)
+        slope = old_div((old_div((fg_len - fg_rank[i] + 1), fg_len)), (old_div((total_len - total_rank[i] + 1), total_len)))
         slopes.append(slope)
     mncp = mean(slopes)
     return mncp
@@ -588,7 +593,7 @@ def run_assess(score_function, summary_output, raw_output, user_motif_details, c
                 cell_lab = raw_chip_data.split('/')[-1].split('.')[0]
 
                 chip_score = score_chipseq(raw_chip_data, score, user_motif_details)
-                cut_off = len(chip_score[1]) / 2  # use a flexible cut-off dictated by the sze of the input file
+                cut_off = old_div(len(chip_score[1]), 2)  # use a flexible cut-off dictated by the sze of the input file
 
                 au = compute_auc(chip_score[1], cut_off, label)
                 auc += [au]
@@ -753,7 +758,7 @@ def plot_histogram_assess(assess_input, figure_output):
 
 if __name__ == '__main__':
     if len(sys.argv) < 6:
-        print __doc__
+        print(__doc__)
         sys.exit(1)
     tf_par = sys.argv[1]
     scoring_fun = sys.argv[2]

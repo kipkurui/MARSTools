@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import os
 import sys
 
@@ -5,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from utils import tab2fasta, rotate_image, meme_path
+from .utils import tab2fasta, rotate_image, meme_path
 
 
 def run_gimme(tf, user_motif, chip_seq_list, results_path, figure=False):
@@ -106,7 +108,7 @@ def meme2gimme(meme, gimme):
 
 if __name__ == '__main__':
     if len(sys.argv) < 5:
-        print __doc__
+        print(__doc__)
         sys.exit(1)
     tf = sys.argv[1]
     chip_seq_list = sys.argv[2]

@@ -1,11 +1,14 @@
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import range
 import random
 import numpy as N
 import math
 import os.path
 import logging
-import ext_clustering as ext
+from . import ext_clustering as ext
 import scipy.io as NIO
-import Motif
+from . import Motif
 
 import warnings
 warnings.simplefilter("ignore", N.ComplexWarning)
@@ -65,7 +68,7 @@ def kernelize(kernel, type_kernel=NO_NEGATIVE_EIGENVALUES):
                 w_no_neg.append(0)
 
         k_ = N.dot(N.dot(weigen, SCI.diag(w_no_neg)), N.transpose(weigen))
-        print k_
+        print(k_)
         return k_.astype('f')
 
     if type_kernel == QUADRATIC_EIGENVALUES:
@@ -131,7 +134,7 @@ def _writeClusters(clusters, output):
 def normalize01(matrix):
     max_ = max(matrix.flat)
     min_ = min(matrix.flat)
-    if min_ < 0: print "Normalization: Negative entry in matrix"
+    if min_ < 0: print("Normalization: Negative entry in matrix")
 
     matrix = N.subtract(matrix, min_)
     matrix = N.divide(matrix, (max_ - min_))
@@ -145,7 +148,7 @@ def usage(argv0):
     """
     Main program usage
     """
-    print argv0, "kcmeans sim_matrix:file k:int |"
+    print(argv0, "kcmeans sim_matrix:file k:int |")
 
 
 #	print argv0, "fcmeans sim_matrix:file k:int m:float|"

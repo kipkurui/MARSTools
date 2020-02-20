@@ -1,19 +1,21 @@
-import utilsMatrix
-from Motif import *
+from __future__ import print_function
+from __future__ import absolute_import
+from . import utilsMatrix
+from .Motif import *
 import sys
 import os
 
-import utils
+from . import utils
 
 
 def helpProgram():
-    print "\nCorrect usage:\n\n\tpython fisim.py -f1 <FileIn1> -f2 <FileIn2> [-o <fileOut>] [-v]"
-    print "or\n\tpython fisim.py -fileList <FileIn> -o <FileOut> [-core] [-ID]"
-    print "\nFirst option: fisim will be computed for the two motifs found in f1 and f2."
-    print "\nSecond option: fisim will be computed pairwise for all the motifs found in fileList. The output will be a similarity matrix."
-    print "\t-core is used when one wants to compute similarities between the cores."
-    print "\t-ID is used when ones want to use the ID instead of the name for motifs identification."
-    print "\npython fisim -h prints this help\n"
+    print("\nCorrect usage:\n\n\tpython fisim.py -f1 <FileIn1> -f2 <FileIn2> [-o <fileOut>] [-v]")
+    print("or\n\tpython fisim.py -fileList <FileIn> -o <FileOut> [-core] [-ID]")
+    print("\nFirst option: fisim will be computed for the two motifs found in f1 and f2.")
+    print("\nSecond option: fisim will be computed pairwise for all the motifs found in fileList. The output will be a similarity matrix.")
+    print("\t-core is used when one wants to compute similarities between the cores.")
+    print("\t-ID is used when ones want to use the ID instead of the name for motifs identification.")
+    print("\npython fisim -h prints this help\n")
 
 f1 = None
 f2 = None
@@ -48,7 +50,7 @@ while i < len(sys.argv):
         helpProgram()
         sys.exit(-1)
     else:
-        print "Unknown flag " + sys.argv[i]
+        print("Unknown flag " + sys.argv[i])
         helpProgram()
         sys.exit(-1)
     i += 1
@@ -75,15 +77,15 @@ if f1 is None and f2 is None and fileList is None:
     sys.exit(-1)
 
 if f1 is not None and not os.path.isfile(f1):
-    print "Input file f1 " + f1 + " not found"
+    print("Input file f1 " + f1 + " not found")
     sys.exit(-1)
 
 if f2 is not None and not os.path.isfile(f2):
-    print "Input file f2 " + f2 + " not found"
+    print("Input file f2 " + f2 + " not found")
     sys.exit(-1)
 
 if fileList is not None and not os.path.isfile(fileList):
-    print "Input file fileList " + fileList + " not found"
+    print("Input file fileList " + fileList + " not found")
     sys.exit(-1)
 
 
@@ -110,7 +112,6 @@ elif fileList is not None:
     utilsMatrix.createSimMatrix(motifs, cores, out, ID=ID, verbose=verbose)
 
 else:
-    print "We got here"
     helpProgram()
     sys.exit(-1)
 

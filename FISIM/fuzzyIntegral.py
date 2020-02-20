@@ -1,6 +1,9 @@
+from __future__ import absolute_import
+from builtins import zip
+from builtins import range
 from copy import *
 
-import newton
+from . import newton
 
 
 def _func(x,l):
@@ -62,7 +65,7 @@ def fuzzyIntegral(importances,distances,l=None):
 	Finalmente calcular el maximo de los minimos de las importancias y las distancias en cada posicion"""
 	if l == None: l = computeLambda(importances)
 
-	all = zip(distances,importances)
+	all = list(zip(distances,importances))
 	all.sort(reverse=True)
 	imp = [all[i][1] for i in range(len(all))]
 	dist = [all[i][0] for i in range(len(all))]

@@ -16,6 +16,8 @@ Usage:
     python run_centrimo.py <Tf_name> <chip-seq_list> <test_meme_file> >results_path>
     eg: python run_centrimo.py Cjun  <test_meme_file> >results_path>
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 import sys
@@ -24,7 +26,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from utils import BASE_DIR
+from .utils import BASE_DIR
 
 
 def run_fisim(tf, meme_file, results_folder, figure=False):
@@ -75,7 +77,7 @@ def plot_heatmap_fisim(fisim_input, figure_output):
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
-        print __doc__
+        print(__doc__)
         sys.exit(1)
     tf = sys.argv[1]
     test_meme_input = sys.argv[2]
