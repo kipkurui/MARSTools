@@ -23,3 +23,9 @@ To set up [MARSTools](https://github.com/kipkurui/MARSTools), follow the followi
     #Activate the environment
     source activate MARS
     ```
+
+## TODO:
+- Add example data scalled down for testing the tools
+- Provide basic scripts for testing the tool
+- Fix the errors that existed in the previous tool, as highlighted by the reviewers
+- Package the tool for easy install using conda

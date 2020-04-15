@@ -28,19 +28,22 @@ Takes as input:
     A repository to put results
 
 Usage:
-    python Assess_by_score.py <tf> <scoring_function> <user_motif> <chip_seq_list> <results_folder_path>
+    python Assess_by_score.py <tf> <SCORING_FUNCTION> <USER_MOTIF> <chip_seq_list> <results_folder_path>
     #TODO: Add one from the example folder
-    e.g python Assess_by_score.py <tf> <scoring_function> <user_motif> <chip_seq_list> <results_folder_path>
+    e.g python Assess_by_score.py <tf> <SCORING_FUNCTION> <USER_MOTIF> <chip_seq_list> <results_folder_path>
 """
 from __future__ import division
 from __future__ import print_function
 
 from builtins import str
 from builtins import range
-from past.utils import old_div
 import os
 import sys
 from math import exp
+from past.utils import old_div
+
+
+
 
 import numpy as np
 import pandas as pd
@@ -104,7 +107,7 @@ def get_motif(meme, motif="MOTIF"):
     Extract a motif from meme file given a unique motif
     name and create dictionary for sequence scoring
 
-    Default motif name is keyword MOTIF for single motif files. 
+    Default motif name is keyword MOTIF for single motif files.
     """
 
     pwm_dictionary = {}
@@ -236,7 +239,6 @@ def sumlogoddsscore(pwm_dictionary, seq):
     """
     Takes as input a PWM dictionary, and a sequences and
     computes the sum of the log odds scores.
-    
     This is the scoring approach that is used by MEME Suite
     """
     if "N" in seq:
@@ -308,7 +310,7 @@ def maxlogoddsscore(pwm_dictionary, seq):
                 log_odds_score += (old_div(np.log(q / 0.25), np.log(2))) * 100
                 log_odds_score_rc += (old_div(np.log(q_rc / 0.25), np.log(2))) * 100
             log_odds_list.append(log_odds_score)
-            # FIXME: There was an error here in which we did not include 
+            # FIXME: There was an error here in which we did not include
             # the reverse complement in the computation
             log_odds_list.append(log_odds_score_rc)
         max_log_odds = max(log_odds_list)
@@ -471,7 +473,7 @@ def compute_mncp(predicted, cutoff, label):
     """
     This is the MNCP computation adopted from Clarke 2003
 
-    MNCP is a rank based metric similar to AUC but 
+    MNCP is a rank based metric similar to AUC but
     its a plot of TP and all positives
     hence considered to be less affected by false positives.
 
@@ -575,6 +577,9 @@ def score_chipseq(chip_seq, score_function, user_motif_details):
 
 
 def run_assess(score_function, summary_output, raw_output, user_motif_details, chip_seq_list):
+    """
+        What does this do?
+    """
     with open(summary_output, "a") as out:
         auc = []
         spearman = []
@@ -617,12 +622,10 @@ def run_assess(score_function, summary_output, raw_output, user_motif_details, c
                                                            np.mean(spearman))
         out.write(write_out_data)
 
-
-score_extensions = {"gomeroccupancyscore": 'gomer', "energyscore": 'energy', "amaoccupancyscore": 'ama',
-                    "maxoccupancyscore": 'maxoc', "sumlogoddsscore": 'sumlog', "maxlogoddsscore": 'maxlog',
-                    "sumoccupancyscore": 'sumoc', "energy_score_kmer": 'energymer',
-                    "max_score_kmer": 'max_kmer', "max_score_kmer_pos": 'max_kmer_pos'}
-
+SCORE_EXTENSION = {"gomeroccupancyscore": 'gomer', "energyscore": 'energy', "amaoccupancyscore": 'ama',
+                   "maxoccupancyscore": 'maxoc', "sumlogoddsscore": 'sumlog', "maxlogoddsscore": 'maxlog',
+                   "sumoccupancyscore": 'sumoc', "energy_score_kmer": 'energymer',
+                   "max_score_kmer": 'max_kmer', "max_score_kmer_pos": 'max_kmer_pos'}
 
 def get_tf_names(user_motif):
     tf_names = []
@@ -641,8 +644,8 @@ def run_all(tf, scoring_function, user_motif, chip_seq_list, results_folder_path
         chip_seq_list = random.sample(chip_seq_list, 10)
 
     score_option = scoring_function
-    summary_output_file = "%s/%s.%s" % (results_folder_path, tf.lower(), score_extensions[scoring_function])
-    raw_output_file = "%s/%s_raw.%s" % (results_folder_path, tf.lower(), score_extensions[scoring_function])
+    summary_output_file = "%s/%s.%s" % (results_folder_path, tf.lower(), SCORE_EXTENSION[scoring_function])
+    raw_output_file = "%s/%s_raw.%s" % (results_folder_path, tf.lower(), SCORE_EXTENSION[scoring_function])
     pr = "%s\t%s\t%s\t%s\t%s\n" % ("Motif", "AUC", "MNCP", "Pearson", "Spearman")
 
     file_header = "%s\t%s\t%s\t%s\t%s\t%s\n" % ("Cell_lab", "Motif", "AUC", "MNCP", "Pearson", "Spearman")
@@ -679,7 +682,7 @@ def run_all(tf, scoring_function, user_motif, chip_seq_list, results_folder_path
 
 def plot_info(tf, score_method, results_folder):
     files_path = '%s/%s' % (results_folder, tf)
-    score_ext = score_extensions[score_method]
+    score_ext = SCORE_EXTENSION[score_method]
 
     plot_histogram_assess(files_path + "." + score_ext,
                           files_path + '_assess')
@@ -706,8 +709,8 @@ def plot_raw_assess(raw_data, figure_output, stat):
     cg = sns.clustermap(raw_edit, method='single', metric="euclidean", z_score=None,
                         annot=True, row_cluster=False, col_cluster=True, linewidths=.15)
     # to rotate the y-axis labels correctly
-    test = plt.setp(cg.ax_heatmap.yaxis.get_majorticklabels(), rotation=0)
-    test = plt.setp(cg.ax_heatmap.xaxis.get_majorticklabels(), rotation=90)
+    plt.setp(cg.ax_heatmap.yaxis.get_majorticklabels(), rotation=0)
+    plt.setp(cg.ax_heatmap.xaxis.get_majorticklabels(), rotation=90)
 
     f = plt.gcf()
     f.savefig(figure_output, bbox_inches='tight')
@@ -760,10 +763,10 @@ if __name__ == '__main__':
     if len(sys.argv) < 6:
         print(__doc__)
         sys.exit(1)
-    tf_par = sys.argv[1]
-    scoring_fun = sys.argv[2]
-    user_motif = sys.argv[3]
-    chip_list = sys.argv[4]
-    results_path = sys.argv[5]
+    TF_NAME = sys.argv[1]
+    SCORING_FUNCTION = sys.argv[2]
+    USER_MOTIF = sys.argv[3]
+    CHIP_LIST = sys.argv[4]
+    RESULTS_PATH = sys.argv[5]
 
-    run_all(tf_par, scoring_fun, user_motif, chip_list, results_path)
+    run_all(TF_NAME, SCORING_FUNCTION, USER_MOTIF, CHIP_LIST, RESULTS_PATH)
