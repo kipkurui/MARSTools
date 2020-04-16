@@ -1,8 +1,7 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
-from past.utils import old_div
-from .Assess_by_score import *
+from Assess_by_score import *
 
 ###########################################################################
 # Assess motifs using PBM data
@@ -130,7 +129,7 @@ def run_assess_pbm(score_function, summary_output, raw_output, user_motif_detail
 
                     cell_lab = raw_pbm_data.split('/')[-1].split('_deBruijn')[0]  # Specific to PBM
                     pbm_score = score_pbm(raw_pbm_data, score, user_motif_details)  # Specific to PBM
-                    cut_off = old_div(len(pbm_score[1]),2)  # use a flexible cut-off dictated by the sze of teh input file
+                    cut_off = len(pbm_score[1]) // 2  # use a flexible cut-off dictated by the sze of teh input file
 
                     au = compute_auc(pbm_score[1], cut_off, label)
                     auc += [au]

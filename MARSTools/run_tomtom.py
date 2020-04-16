@@ -23,7 +23,7 @@ from scipy.stats.mstats import winsorize
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from .utils import meme_path
+from utils import meme_path
 
 
 def run_tomtom(tf, meme_file, results_folder, figure=False):

@@ -35,7 +35,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from .utils import tab2fasta, mkdir_p, meme_path, BASE_DIR
+from utils import tab2fasta, mkdir_p, meme_path, BASE_DIR
 
 
 def run_centrimo(tf_name, chip_seq_list, test_meme_input, files_path, figure=False):
@@ -163,8 +163,8 @@ if __name__ == '__main__':
     if len(sys.argv) < 5:
         print(__doc__)
         sys.exit(1)
-    tf = sys.argv[1]
-    chip_seq_list = sys.argv[2]
-    test_meme_input = sys.argv[3]
-    results_path = sys.argv[4]
-    run_centrimo(tf, chip_seq_list, test_meme_input, results_path)
+    TF = sys.argv[1]
+    CHIP_SEQ_LIST = sys.argv[2]
+    TEST_MEME = sys.argv[3]
+    RESULTS_PATH = sys.argv[4]
+    run_centrimo(TF, CHIP_SEQ_LIST, TEST_MEME, RESULTS_PATH)
