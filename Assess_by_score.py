@@ -38,7 +38,6 @@ from __future__ import print_function
 import os
 import sys
 from math import exp
-from past.utils import old_div
 
 
 
@@ -50,8 +49,9 @@ from matplotlib import pyplot as plt
 from scipy import stats
 from sklearn import metrics
 
-from MARSTools.kmer_scoring import get_kmer_dict_rev
-from MARSTools.utils import rotate_image
+
+from kmer_scoring import get_kmer_dict_rev
+from utils import rotate_image
 
 #################################################################################
 # #TODO: Convert the functions to classes and optimize the performance
@@ -230,7 +230,7 @@ def sumoccupancyscore(pwm_dictionary, seq):
                     occupancy *= pwm_dictionary[seq[j + i]][j]
                     occupancy_rc *= pwm_dictionary_rc[seq[j + i]][j]
             sum_occupancy += occupancy + occupancy_rc
-        return old_div(sum_occupancy, 2)
+        return sum_occupancy / 2
 
 
 def sumlogoddsscore(pwm_dictionary, seq):
@@ -266,10 +266,10 @@ def sumlogoddsscore(pwm_dictionary, seq):
                     else:
                         q = pwm_dictionary[seq[j + i]][j]
                         q_rc = pwm_dictionary_rc[seq[j + i]][j]
-                    log_odds += (old_div(np.log(q / 0.25), np.log(2))) * 100
-                    log_odds_rc += (old_div(np.log(q_rc / 0.25), np.log(2))) * 100
+                    log_odds += (np.log(q / 0.25) / np.log(2)) * 100
+                    log_odds_rc += (np.log(q_rc / 0.25) / np.log(2)) * 100
             sum_log_odds += log_odds + log_odds_rc
-        return old_div(sum_log_odds, 2)
+        return sum_log_odds / 2
 
 
 def maxlogoddsscore(pwm_dictionary, seq):
@@ -305,8 +305,8 @@ def maxlogoddsscore(pwm_dictionary, seq):
                     else:
                         q = pwm_dictionary[seq[j + i]][j]
                         q_rc = pwm_dictionary_rc[seq[j + i]][j]
-                log_odds_score += (old_div(np.log(q / 0.25), np.log(2))) * 100
-                log_odds_score_rc += (old_div(np.log(q_rc / 0.25), np.log(2))) * 100
+                log_odds_score += (np.log(q / 0.25) / np.log(2)) * 100
+                log_odds_score_rc += (np.log(q_rc / 0.25) / np.log(2)) * 100
             log_odds_list.append(log_odds_score)
             # FIXME: There was an error here in which we did not include
             # the reverse complement in the computation
@@ -369,7 +369,7 @@ def amaoccupancyscore(pwm_dictionary, seq):
                     occupancy *= pwm_dictionary[seq[j + i]][j]
                     occupancy_rc *= pwm_dictionary_rc[seq[j + i]][j]
             occupancy_list.append(occupancy + occupancy_rc)
-        ama_occupancy = old_div(sum(occupancy_list), len(occupancy_list))
+        ama_occupancy = sum(occupancy_list) / len(occupancy_list)
         return ama_occupancy
 
 
@@ -411,8 +411,8 @@ def energyscore(pwm_dictionary, seq):
                     energy += pwm_dictionary[seq[j + i]][j]
                     energy_rc += pwm_dictionary_rc[seq[j + i]][j]
 
-                energy_list.append(old_div(1, (1 + (exp(energy)))))
-                energy_list.append(old_div(1, (1 + (exp(energy_rc)))))
+                energy_list.append(1 / (1 + (exp(energy))))
+                energy_list.append(1 / (1 + (exp(energy_rc))))
         energy_score = min(energy_list)
         return energy_score
 
@@ -438,6 +438,7 @@ def compute_auc(predicted, cutoff, label):
         chr2:43619807-43619857	\t 4.251985e-08	\t 0 \n
     log: Changed to be able to compute AUC for any scores
     """
+
     y = np.concatenate((np.ones(cutoff), np.zeros(cutoff)), axis=0)
 
     fpr, tpr, thresholds = metrics.roc_curve(y, predicted[:cutoff * 2], pos_label=label)
@@ -500,7 +501,7 @@ def compute_mncp(predicted, cutoff, label):
     total_rank = stats.rankdata(hstack((fg_vals, bg_vals)))
     slopes = []
     for i in range(len(fg_vals)):
-        slope = old_div((old_div((fg_len - fg_rank[i] + 1), fg_len)), (old_div((total_len - total_rank[i] + 1), total_len)))
+        slope = ((fg_len - fg_rank[i] + 1) / fg_len) / ((total_len - total_rank[i] + 1) / total_len)
         slopes.append(slope)
     mncp = mean(slopes)
     return mncp
@@ -514,6 +515,10 @@ def compute_spearman(observed, predicted, cutoff, label=0):
     score and the intensity score
     :param label:
     """
+    observed = [float(i) for i in observed]
+    predicted = [float(i) for i in predicted]
+    observed = [float(i) - np.mean(observed) for i in observed]
+    predicted = [float(i) - np.mean(predicted) for i in predicted]
 
     speaman = stats.spearmanr(observed[:cutoff], predicted[:cutoff])[0]
 
@@ -564,8 +569,9 @@ def score_chipseq(chip_seq, score_function, user_motif_details):
         chip_score = np.zeros(len(test_file))
         seq_col = 1
 
+    #print(test_file[seq_col])
     seq_score = test_file[seq_col].apply(lambda seq: score_function(area_pwm, seq))
-
+    
     return chip_score, seq_score
 
 
@@ -594,9 +600,10 @@ def run_assess(score_function, summary_output, raw_output, user_motif_details, c
         with open(raw_output, 'a') as raw_out:
             for raw_chip_data in chip_seq_list:
                 cell_lab = raw_chip_data.split('/')[-1].split('.')[0]
-
+                
                 chip_score = score_chipseq(raw_chip_data, score, user_motif_details)
-                cut_off = old_div(len(chip_score[1]), 2)  # use a flexible cut-off dictated by the sze of the input file
+                print(chip_score)
+                cut_off = len(chip_score[1]) // 2 # use a flexible cut-off dictated by the size of the input file
 
                 au = compute_auc(chip_score[1], cut_off, label)
                 auc += [au]
@@ -703,7 +710,7 @@ def plot_raw_assess(raw_data, figure_output, stat):
     raw_max = raw_max.drop_duplicates()
 
     raw_edit = raw_max.pivot('Motif', 'Cell_lab', stat)
-    raw_edit.sort(columns="Average", axis=0, ascending=False, inplace=True)
+    raw_edit.sort_values(by="Average", axis=0, ascending=False, inplace=True)
     cg = sns.clustermap(raw_edit, method='single', metric="euclidean", z_score=None,
                         annot=True, row_cluster=False, col_cluster=True, linewidths=.15)
     # to rotate the y-axis labels correctly
@@ -734,7 +741,7 @@ def plot_histogram_assess(assess_input, figure_output):
     raw_auc = pd.read_table(assess_input, index_col="Motif")
     raw_auc = raw_auc.drop_duplicates()
     # df = df.T.drop_duplicates().T
-    raw_auc = raw_auc.sort(columns="MNCP", axis=0, ascending=False)
+    raw_auc = raw_auc.sort_values(by="MNCP", axis=0, ascending=False)
     labels = raw_auc.index
     x = 10
     if len(labels) > 50:
@@ -743,13 +750,13 @@ def plot_histogram_assess(assess_input, figure_output):
         x = 5
     f, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(x, 10), sharex=True)
     a = sns.barplot(x=labels, y=raw_auc["AUC"],
-                    palette='colorblind', x_order=labels, ax=ax1)
+                    palette='colorblind', order=labels, ax=ax1)
     b = sns.barplot(x=labels, y=raw_auc["MNCP"],
-                    palette="colorblind", x_order=labels, ax=ax2)
+                    palette="colorblind", order=labels, ax=ax2)
     c = sns.barplot(x=labels, y=raw_auc["Spearman"],
-                    palette="colorblind", x_order=labels, ax=ax3)
+                    palette="colorblind", order=labels, ax=ax3)
     d = sns.barplot(x=labels, y=raw_auc["Pearson"],
-                    palette="colorblind", x_order=labels, ax=ax4)
+                    palette="colorblind", order=labels, ax=ax4)
     d.set_xticklabels(labels, rotation=90)
 
     sns.despine()
@@ -766,5 +773,5 @@ if __name__ == '__main__':
     USER_MOTIF = sys.argv[3]
     CHIP_LIST = sys.argv[4]
     RESULTS_PATH = sys.argv[5]
-
+    CHIP_LIST = [CHIP_LIST + "/" + x for x in os.listdir(CHIP_LIST)]
     run_all(TF_NAME, SCORING_FUNCTION, USER_MOTIF, CHIP_LIST, RESULTS_PATH)

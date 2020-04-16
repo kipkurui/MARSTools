@@ -8,7 +8,7 @@ A module for scoring sequences using k-mers used by Assess_by_score
 from builtins import range
 import pandas as pd
 
-from MARSTools.utils import revcompl
+from utils import revcompl
 
 
 def get_kmer_dict_rev(kmerscore, kmer_name):

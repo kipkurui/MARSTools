@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from .utils import tab2fasta, rotate_image, meme_path
+from utils import tab2fasta, rotate_image, meme_path
 
 
 def run_gimme(tf, user_motif, chip_seq_list, results_path, figure=False):
@@ -20,7 +20,7 @@ def run_gimme(tf, user_motif, chip_seq_list, results_path, figure=False):
         gimme_mot = '%s/%s.motif' % (results_path, tf)
         meme2gimme(user_motif, gimme_mot)
 
-        os.system("%s/gimme roc %s %s/%s.fa %s/%s.bg >>%s/%s_gimme_metrics.txt" %
+        os.system("%s/gimme roc -p %s %s/%s.fa %s/%s.bg >>%s/%s_gimme_metrics.txt" %
                   (meme_path, gimme_mot, results_path, file_name, results_path, file_name, results_path, tf))
     # import glob
     # for i in glob.glob('tmp/*'):
@@ -111,8 +111,8 @@ if __name__ == '__main__':
         print(__doc__)
         sys.exit(1)
     tf = sys.argv[1]
-    chip_seq_list = sys.argv[2]
-    test_meme_input = sys.argv[3]
+    test_meme_input = sys.argv[2]
+    CHIP_LIST = sys.argv[3]
     results_path = sys.argv[4]
-
-    run_gimme(tf, test_meme_input, chip_seq_list, results_path)
+    CHIP_LIST = [CHIP_LIST + "/" + x for x in os.listdir(CHIP_LIST)]
+    run_gimme(tf, test_meme_input, CHIP_LIST, results_path)
