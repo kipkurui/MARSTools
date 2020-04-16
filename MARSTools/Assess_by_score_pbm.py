@@ -1,7 +1,11 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
-from Assess_by_score import *
+
+from .Assess_by_score import np, sys, score_extensions, compute_mncp, \
+    compute_pearson, compute_spearman,\
+    get_motif_from_meme,pd, compute_auc
+
 
 ###########################################################################
 # Assess motifs using PBM data
@@ -186,7 +190,8 @@ def run_all_pbm(tf, scoring_function, user_motif, pbm_list, results_folder_path)
 
     for mot_name in tf_names:
         user_motif_details = get_motif_from_meme(user_motif, mot_name)
-        run_assess_pbm(score_option, summary_output_file, raw_output_file, user_motif_details, pbm_list)
+        run_assess_pbm(score_option, summary_output_file, raw_output_file,\
+             user_motif_details, pbm_list)
 
 
 # TODO: Add a plotting function independent in each module

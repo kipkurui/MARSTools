@@ -48,8 +48,8 @@ from scipy import stats
 from sklearn import metrics
 
 
-from kmer_scoring import get_kmer_dict_rev
-from utils import rotate_image
+from .kmer_scoring import get_kmer_dict_rev
+from .utils import rotate_image
 
 #################################################################################
 # #TODO: Convert the functions to classes and optimize the performance

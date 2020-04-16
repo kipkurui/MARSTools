@@ -25,7 +25,7 @@ from __future__ import absolute_import
 
 from builtins import map
 from builtins import range
-from past.utils import old_div
+
 import os
 import sys
 import glob
@@ -35,7 +35,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from utils import tab2fasta, mkdir_p, meme_path, BASE_DIR
+from .utils import tab2fasta, mkdir_p, meme_path, BASE_DIR
 
 
 def run_centrimo(tf_name, chip_seq_list, test_meme_input, files_path, figure=False):
@@ -124,7 +124,7 @@ def run_centrimo(tf_name, chip_seq_list, test_meme_input, files_path, figure=Fal
     centrimo_df = pd.read_table('%s/%s_centrimo.txt' % (files_path, tf_name), index_col=0)
     del centrimo_df['Average']
 
-    centrimo_normalized = old_div(centrimo_df,centrimo_df.max())
+    centrimo_normalized = centrimo_df / centrimo_df.max()
     centrimo_normalized = centrimo_normalized.replace(to_replace='NaN', value=0)
     average_column = centrimo_normalized.T.mean()
     average_column = average_column.to_frame(name="Average")

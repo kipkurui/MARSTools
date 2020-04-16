@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from utils import tab2fasta, rotate_image, meme_path
+from .utils import tab2fasta, rotate_image, meme_path
 
 
 def run_gimme(tf, user_motif, chip_seq_list, results_path, figure=False):

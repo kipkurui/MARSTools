@@ -12,7 +12,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-from past.utils import old_div
 import os
 import sys
 from math import log
@@ -23,7 +22,7 @@ from scipy.stats.mstats import winsorize
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from utils import meme_path
+from .utils import meme_path
 
 
 def run_tomtom(tf, meme_file, results_folder, figure=False):
@@ -73,7 +72,7 @@ def clean_tomtom(tom_in, tom_out):
                   limits=0.05), index=tomtom_matrix.index, columns=tomtom_matrix.columns)
 
     # Normalize
-    tomtom_normalized = old_div(tomtom_winz, tomtom_winz.max())
+    tomtom_normalized = tomtom_winz / tomtom_winz.max()
 
     tomtom_normalized["Average"] = tomtom_normalized.mean()
     tomtom_normalized.sort_values(by="Average", ascending=False, inplace=True)
