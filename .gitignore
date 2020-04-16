@@ -31,3 +31,6 @@ sys
 *.pyc
 *~
 Data/hg19.fa
+
+__pycache__
+.vscode
