@@ -44,6 +44,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
+from numpy.core.multiarray import ndarray
 from scipy import stats
 from sklearn import metrics
 
@@ -106,11 +107,7 @@ def get_motif(meme, motif="MOTIF"):
     Default motif name is keyword MOTIF for single motif files.
     """
 
-    pwm_dictionary = {}
-    pwm_dictionary["A"] = []
-    pwm_dictionary["C"] = []
-    pwm_dictionary["G"] = []
-    pwm_dictionary["T"] = []
+    pwm_dictionary = {"A": [], "C": [], "G": [], "T": []}
     flag = 0
     check = 0
     with open(meme, "r") as f1:
@@ -140,11 +137,7 @@ def rc_pwm(area_pwm, pwm_len):
     complement of the motif
     """
 
-    rcareapwm = {}
-    rcareapwm["A"] = []
-    rcareapwm["C"] = []
-    rcareapwm["G"] = []
-    rcareapwm["T"] = []
+    rcareapwm = {"A": [], "C": [], "G": [], "T": []}
     for i in range(pwm_len):
         rcareapwm["A"].append(area_pwm["T"][pwm_len - i - 1])
         rcareapwm["C"].append(area_pwm["G"][pwm_len - i - 1])
@@ -569,7 +562,7 @@ def score_chipseq(chip_seq, score_function, user_motif_details):
 
     #print(test_file[seq_col])
     seq_score = test_file[seq_col].apply(lambda seq: score_function(area_pwm, seq))
-    
+
     return chip_score, seq_score
 
 
@@ -598,14 +591,14 @@ def run_assess(score_function, summary_output, raw_output, user_motif_details, c
         with open(raw_output, 'a') as raw_out:
             for raw_chip_data in chip_seq_list:
                 cell_lab = raw_chip_data.split('/')[-1].split('.')[0]
-                
+
                 chip_score = score_chipseq(raw_chip_data, score, user_motif_details)
                 print(chip_score)
                 cut_off = len(chip_score[1]) // 2 # use a flexible cut-off dictated by the size of the input file
 
                 au = compute_auc(chip_score[1], cut_off, label)
                 auc += [au]
-                mn = compute_mncp(chip_score[1], cut_off, label)
+                mn = compute_mncp(chip_score[1], cut_off, label)  # type: ndarray
                 mncp += [mn]
                 sp = compute_spearman(chip_score[0], chip_score[1], cut_off, label)
                 spearman.append(sp)
@@ -679,7 +672,7 @@ def run_all(tf, scoring_function, user_motif, chip_seq_list, results_folder_path
 
 
 ##############################################################################
-# Plotting fuctions
+# Plotting functions
 ###############################################################################
 
 
@@ -773,3 +766,4 @@ if __name__ == '__main__':
     RESULTS_PATH = sys.argv[5]
     CHIP_LIST = [CHIP_LIST + "/" + x for x in os.listdir(CHIP_LIST)]
     run_all(TF_NAME, SCORING_FUNCTION, USER_MOTIF, CHIP_LIST, RESULTS_PATH)
+

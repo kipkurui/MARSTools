@@ -5,14 +5,13 @@ from builtins import str
 from builtins import zip
 from builtins import range
 from builtins import object
-from past.utils import old_div
 import types
 
 from numpy import *
 
-from . import fuzzyIntegral
+import fuzzyIntegral
 
-from . import utils
+import utils
 
 
 class Motif(object):
@@ -167,16 +166,16 @@ Returns a list containing:
             curTime += 1
 
         if fileOut is not None:
-            fileOut.write("FISim value: " + str(old_div(maxSim,minSize)) + "\n")
+            fileOut.write("FISim value: " + str(maxSim / minSize) + "\n")
             fileOut.write("Start position: " + str(startPosition) + "\n")
             fileOut.write("Reverse opposite: " + str(bestRev) + "\n")
 
         if verbose:
-            print("FISim value: " + str(old_div(maxSim,minSize)))
+            print("FISim value: " + str(maxSim / minSize))
             print("Start position: " + str(startPosition))
             print("Reverse opposite: " + str(bestRev))
 
-        return old_div(maxSim,minSize), startPosition, bestRev
+        return maxSim / minSize, startPosition, bestRev
 
 
     def calculateRevMatrixFSM(self):

@@ -68,7 +68,7 @@ def kernelize(kernel, type_kernel=NO_NEGATIVE_EIGENVALUES):
                 w_no_neg.append(0)
 
         k_ = N.dot(N.dot(weigen, SCI.diag(w_no_neg)), N.transpose(weigen))
-        print(k_)
+        #print(k_)
         return k_.astype('f')
 
     if type_kernel == QUADRATIC_EIGENVALUES:

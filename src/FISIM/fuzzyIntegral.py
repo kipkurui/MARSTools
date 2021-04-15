@@ -3,7 +3,7 @@ from builtins import zip
 from builtins import range
 from copy import *
 
-from . import newton
+import newton
 
 
 def _func(x,l):
@@ -14,7 +14,7 @@ def _func(x,l):
 	aux = 1
 	for i in range(len(l)):
 		aux = aux * (1+float(l[i])*x)
-
+	print(aux)
 	return aux - (1+x)
 
 		
@@ -26,6 +26,7 @@ def computeLambda(l):
 		aux = newton.newtonRaphson(_func, 0.000001, 10000, 1.0e-5, l)
 	if aux == None:
 		aux = 0
+	print(aux)
 	return aux
 
 

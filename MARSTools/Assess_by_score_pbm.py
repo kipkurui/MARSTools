@@ -2,9 +2,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-from .Assess_by_score import np, sys, score_extensions, compute_mncp, \
+from .Assess_by_score import np, sys, SCORE_EXTENSION, compute_mncp, \
     compute_pearson, compute_spearman,\
-    get_motif_from_meme,pd, compute_auc
+    get_motif_from_meme, pd, compute_auc
 
 
 ###########################################################################

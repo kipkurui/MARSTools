@@ -1,11 +1,9 @@
 from __future__ import division
 from __future__ import print_function
-from past.builtins import cmp
 from builtins import str
 from builtins import map
 from builtins import range
 from builtins import object
-from past.utils import old_div
 class DerivVar(object):
     """Variable with derivatives
 
@@ -56,7 +54,7 @@ class DerivVar(object):
             return self, DerivVar(other, [])
 
     def __cmp__(self, other):
-        return cmp(self.value, other.value)
+        return ((self.value > other.value) - (self.value < other.value)) 
 
     def __neg__(self):
         return DerivVar(-self.value, [-a for a in self.deriv])
@@ -66,7 +64,7 @@ class DerivVar(object):
 
     def __abs__(self):  # cf maple signum # derivate of abs
         absvalue = abs(self.value)
-        return DerivVar(absvalue, list(map(lambda a, d=old_div(self.value, absvalue):
+        return DerivVar(absvalue, list(map(lambda a, d=self.value / absvalue:
                                       d * a, self.deriv)))
 
     def __bool__(self):
@@ -87,6 +85,8 @@ class DerivVar(object):
                         _mapderiv(lambda a, b: a - b, other.deriv, self.deriv))
 
     def __mul__(self, other):
+        print("We got here")
+        print(other)
         return DerivVar(self.value * other.value,
                         _mapderiv(lambda a, b: a + b,
                                   list(map(lambda x, f=other.value: f * x, self.deriv)),
@@ -105,7 +105,7 @@ class DerivVar(object):
                                       other.deriv))))
 
     def __rdiv__(self, other):
-        return old_div(other, self)
+        return other / self
 
     def __pow__(self, other, z=None):
         if z is not None:
@@ -184,7 +184,7 @@ class DerivVar(object):
 
     def arccos(self):
         v = Numeric.arccos(self.value)
-        d = old_div(-1., Numeric.sqrt(1. - pow(self.value, 2)))
+        d = -1. / Numeric.sqrt(1. - pow(self.value, 2))
         return DerivVar(v, list(map(lambda x, f=d: f * x, self.deriv)))
 
     def arctan(self):
@@ -194,8 +194,8 @@ class DerivVar(object):
 
     def arctan2(self, other):
         den = self.value * self.value + other.value * other.value
-        s = old_div(self.value, den)
-        o = old_div(other.value, den)
+        s = self.value / den
+        o = other.value / den
         return DerivVar(Numeric.arctan2(self.value, other.value),
                         _mapderiv(lambda a, b: a - b,
                                   list(map(lambda x, f=o: f * x, self.deriv)),
@@ -296,7 +296,7 @@ def newtonRaphson(function, lox, hix, xacc, lista):
             if (xl == rts): return rts
         else:
             dxold = dx
-            dx = old_div(f, df)
+            dx = f / df
             temp = rts
             rts = rts - dx
             if (temp == rts): return rts

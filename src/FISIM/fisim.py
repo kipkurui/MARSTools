@@ -1,11 +1,11 @@
 from __future__ import print_function
 from __future__ import absolute_import
-from . import utilsMatrix
-from .Motif import *
+import utilsMatrix
+from Motif import *
 import sys
 import os
 
-from . import utils
+import utils
 
 
 def helpProgram():

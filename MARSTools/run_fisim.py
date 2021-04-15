@@ -5,7 +5,7 @@ run_fisim.py contains functions to evaluate and rank motifs based on consistency
 FISim tools, summarize and plot the results.
 
 Requires:
-    meme 4.10.0 obtainable from http://meme-suite.org/doc/download.html?man_type=web
+    meme 4.10.0 and above obtainable from http://meme-suite.org/doc/download.html?man_type=web
 
 Takes as input:
     TF name
@@ -13,8 +13,7 @@ Takes as input:
     A repository to output results
 
 Usage:
-    python run_centrimo.py <Tf_name> <chip-seq_list> <test_meme_file> >results_path>
-    eg: python run_centrimo.py Cjun  <test_meme_file> >results_path>
+    python run_fisim.py <Tf_name> <test_meme_file> >results_path>
 """
 from __future__ import print_function
 from __future__ import absolute_import
@@ -40,7 +39,7 @@ def run_fisim(tf, meme_file, results_folder, figure=False):
     """
 
     tf_path = "%s/%s" % (results_folder, tf)
-    os.chdir("%s/MARSTools/FISIM" % BASE_DIR)  # May need to rethink the location of the scripts
+    os.chdir("../src/FISIM")
     os.system("python fisim.py -fileList %s -o %s.fisim -core -ID" % (meme_file, tf_path))
     os.chdir(BASE_DIR)
 
